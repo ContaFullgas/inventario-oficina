@@ -51,7 +51,7 @@ $flash_ok = flash_get('ok') ?? null;
       <a class="nav-link <?= $tab==='add'?'active':'' ?>" href="#add" role="tab">Agregar</a>
     </li>
 
-    <li class="nav-item ms-3"><span class="nav-link disabled text-muted">Catálogos</span></li>
+    <!-- <li class="nav-item ms-3"><span class="nav-link disabled text-muted">Catálogos</span></li> -->
 
     <li class="nav-item" role="presentation">
       <a class="nav-link <?= $tab==='cclase'?'active':'' ?>" href="#cclase" role="tab">Clases</a>
