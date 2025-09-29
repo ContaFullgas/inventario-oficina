@@ -24,30 +24,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 
     if (isset($_POST['accion_cond']) && $_POST['accion_cond'] === 'del') {
-        $id = (int)($_POST['id'] ?? 0);
-        if ($id > 0) {
-            // 1) Obtener el nombre de la condición/estado
-            $row = $pdo->prepare("SELECT nombre FROM cat_condiciones WHERE id=:id");
-            $row->execute([':id'=>$id]);
-            $nombre = $row->fetchColumn();
-
-            if ($nombre !== false) {
-            // 2) Contar usos en items
-            $c = $pdo->prepare("SELECT COUNT(*) FROM items WHERE condicion = :v");
-            $c->execute([':v'=>$nombre]);
-            $usos = (int)$c->fetchColumn();
-
-            if ($usos > 0) {
-                flash_set('ok', "No se puede eliminar: está en uso por $usos producto(s).");
-            } else {
-                $pdo->prepare("DELETE FROM cat_condiciones WHERE id=:id")->execute([':id'=>$id]);
-                flash_set('ok', "Condición/Estado eliminado.");
-            }
-            }
+      check_csrf();
+      $id = (int)($_POST['id'] ?? 0);
+      if ($id > 0) {
+        try {
+          $pdo->prepare("DELETE FROM cat_condiciones WHERE id=:id")->execute([':id'=>$id]);
+          flash_set('ok','Condición/Estado eliminado');
+        } catch (PDOException $e) {
+          flash_set('ok','No se puede eliminar: está en uso por productos.');
         }
-        header('Location: index.php?tab=ccond#ccond', true, 303);
-        exit;
+      }
+      header('Location: index.php?tab=ccond#ccond', true, 303);
+      exit;
     }
+
 }
 
 $rows = $pdo->query("SELECT * FROM cat_condiciones ORDER BY nombre")->fetchAll();

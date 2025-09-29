@@ -3,36 +3,46 @@ require_once __DIR__.'/../config/db.php';
 require_once __DIR__.'/../config/util.php';
 
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
-$clase = isset($_GET['clase']) ? trim($_GET['clase']) : '';
+$clase_id = isset($_GET['clase_id']) && $_GET['clase_id'] !== '' ? (int)$_GET['clase_id'] : null;
 
-$sql = "SELECT * FROM items WHERE 1";
+$sql = "SELECT i.*,
+               c1.nombre AS clase_nombre,
+               c2.nombre AS condicion_nombre,
+               c3.nombre AS ubicacion_nombre
+        FROM items i
+        LEFT JOIN cat_clases c1 ON c1.id = i.clase_id
+        LEFT JOIN cat_condiciones c2 ON c2.id = i.condicion_id
+        LEFT JOIN cat_ubicaciones c3 ON c3.id = i.ubicacion_id
+        WHERE 1";
 $params = [];
+
 if ($q !== '') {
-  $sql .= " AND (nombre LIKE :q OR ubicacion LIKE :q OR condicion LIKE :q)";
+  $sql .= " AND (i.nombre LIKE :q OR c1.nombre LIKE :q OR c2.nombre LIKE :q OR c3.nombre LIKE :q)";
   $params[':q'] = "%$q%";
 }
-if ($clase !== '') {
-  $sql .= " AND clase = :c";
-  $params[':c'] = $clase;
+if (!is_null($clase_id)) {
+  $sql .= " AND i.clase_id = :cid";
+  $params[':cid'] = $clase_id;
 }
-$sql .= " ORDER BY nombre";
+$sql .= " ORDER BY i.nombre";
+
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $items = $stmt->fetchAll();
 
-$clases = $pdo->query("SELECT nombre FROM cat_clases ORDER BY nombre")->fetchAll(PDO::FETCH_COLUMN);
+$clases = $pdo->query("SELECT id, nombre FROM cat_clases ORDER BY nombre")->fetchAll();
 ?>
 <form class="row gy-2 gx-2 align-items-end mb-3" method="get">
   <div class="col-md-5">
     <label class="form-label">Buscar</label>
-    <input type="text" name="q" class="form-control" placeholder="Nombre, ubicación o condición" value="<?=h($q)?>">
+    <input type="text" name="q" class="form-control" placeholder="Nombre, clase, condición o ubicación" value="<?=h($q)?>">
   </div>
   <div class="col-md-5">
     <label class="form-label">Clase</label>
-    <select name="clase" class="form-select">
+    <select name="clase_id" class="form-select">
       <option value="">(Todas)</option>
       <?php foreach ($clases as $c): ?>
-        <option value="<?=h($c)?>" <?= $c===$clase? 'selected':'' ?>><?=h($c)?></option>
+        <option value="<?=$c['id']?>" <?=$clase_id===$c['id']?'selected':''?>><?=h($c['nombre'])?></option>
       <?php endforeach; ?>
     </select>
   </div>
@@ -72,9 +82,9 @@ $clases = $pdo->query("SELECT nombre FROM cat_clases ORDER BY nombre")->fetchAll
         <?php endif; ?>
       </td>
       <td><strong><?=h($it['nombre'])?></strong><br><small class="text-muted"><?=h($it['notas'] ?? '')?></small></td>
-      <td><?=h($it['clase'] ?? '')?></td>
-      <td><?=h($it['ubicacion'] ?? '')?></td>
-      <td><?=h($it['condicion'] ?? '')?></td>
+      <td><?=h($it['clase_nombre'] ?? '')?></td>
+      <td><?=h($it['ubicacion_nombre'] ?? '')?></td>
+      <td><?=h($it['condicion_nombre'] ?? '')?></td>
       <td><?=intval($it['cantidad'])?></td>
       <td><?=intval($it['min_stock'])?></td>
       <td><?=intval($it['max_stock'])?></td>

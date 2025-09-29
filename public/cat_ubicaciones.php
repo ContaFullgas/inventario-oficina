@@ -24,30 +24,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 
   if (isset($_POST['accion_ubi']) && $_POST['accion_ubi'] === 'del') {
-        $id = (int)($_POST['id'] ?? 0);
-        if ($id > 0) {
-            // 1) Obtener el nombre de la ubicación
-            $row = $pdo->prepare("SELECT nombre FROM cat_ubicaciones WHERE id=:id");
-            $row->execute([':id'=>$id]);
-            $nombre = $row->fetchColumn();
-
-            if ($nombre !== false) {
-                // 2) Contar usos en items
-                $c = $pdo->prepare("SELECT COUNT(*) FROM items WHERE ubicacion = :v");
-                $c->execute([':v'=>$nombre]);
-                $usos = (int)$c->fetchColumn();
-
-                if ($usos > 0) {
-                    flash_set('ok', "No se puede eliminar: está en uso por $usos producto(s).");
-                } else {
-                    $pdo->prepare("DELETE FROM cat_ubicaciones WHERE id=:id")->execute([':id'=>$id]);
-                    flash_set('ok', "Ubicación eliminada.");
-                }
-            }
-        }
-        header('Location: index.php?tab=cubi#cubi', true, 303);
-        exit;
+    check_csrf();
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id > 0) {
+      try {
+        $pdo->prepare("DELETE FROM cat_ubicaciones WHERE id=:id")->execute([':id'=>$id]);
+        flash_set('ok','Ubicación eliminada');
+      } catch (PDOException $e) {
+        flash_set('ok','No se puede eliminar: está en uso por productos.');
+      }
     }
+    header('Location: index.php?tab=cubi#cubi', true, 303);
+    exit;
+  }
 
 }
 

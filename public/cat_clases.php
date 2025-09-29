@@ -24,29 +24,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 
   if (isset($_POST['accion_clase']) && $_POST['accion_clase'] === 'del') {
-        $id = (int)($_POST['id'] ?? 0);
-        if ($id > 0) {
-                // 1) Obtener el nombre de la clase
-                $row = $pdo->prepare("SELECT nombre FROM cat_clases WHERE id=:id");
-                $row->execute([':id'=>$id]);
-                $clase = $row->fetchColumn();
-
-                if ($clase !== false) {
-                // 2) ¿Está en uso por items?
-                $c = $pdo->prepare("SELECT COUNT(*) FROM items WHERE clase = :c");
-                $c->execute([':c'=>$clase]);
-                $usos = (int)$c->fetchColumn();
-
-                if ($usos > 0) {
-                    flash_set('ok', "No se puede eliminar: está en uso por $usos producto(s).");
-                } else {
-                    $pdo->prepare("DELETE FROM cat_clases WHERE id=:id")->execute([':id'=>$id]);
-                    flash_set('ok', 'Clase eliminada');
-                }
-            }
-        }
-        header('Location: index.php?tab=cclase#cclase', true, 303); exit;
+    check_csrf();
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id > 0) {
+      try {
+        $pdo->prepare("DELETE FROM cat_clases WHERE id=:id")->execute([':id'=>$id]);
+        flash_set('ok','Clase eliminada');
+      } catch (PDOException $e) {
+        // Si la clase está referenciada por items (FK RESTRICT), caerá aquí
+        flash_set('ok','No se puede eliminar: está en uso por productos.');
+      }
     }
+    header('Location: index.php?tab=cclase#cclase', true, 303);
+    exit;
+  }
+
 
 }
 
