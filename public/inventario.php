@@ -20,7 +20,7 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $items = $stmt->fetchAll();
 
-$clases = $pdo->query("SELECT DISTINCT clase FROM items WHERE clase IS NOT NULL AND clase<>'' ORDER BY clase")->fetchAll(PDO::FETCH_COLUMN);
+$clases = $pdo->query("SELECT nombre FROM cat_clases ORDER BY nombre")->fetchAll(PDO::FETCH_COLUMN);
 ?>
 <form class="row gy-2 gx-2 align-items-end mb-3" method="get">
   <div class="col-md-5">
