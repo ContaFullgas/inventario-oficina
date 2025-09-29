@@ -3,7 +3,7 @@ require_once __DIR__.'/../config/db.php';
 require_once __DIR__.'/../config/util.php';
 
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
-$clase_id = isset($_GET['clase_id']) && $_GET['clase_id'] !== '' ? (int)$_GET['clase_id'] : null;
+$clase_id = (isset($_GET['clase_id']) && $_GET['clase_id'] !== '') ? (int)$_GET['clase_id'] : null;
 
 $sql = "SELECT i.*,
                c1.nombre AS clase_nombre,
@@ -32,10 +32,13 @@ $items = $stmt->fetchAll();
 
 $clases = $pdo->query("SELECT id, nombre FROM cat_clases ORDER BY nombre")->fetchAll();
 ?>
-<form class="row gy-2 gx-2 align-items-end mb-3" method="get">
+<form id="inventario-form" class="row gy-2 gx-2 align-items-end mb-3" method="get" action="index.php#inv">
+  <!-- Mantener la pestaña activa al enviar -->
+  <input type="hidden" name="tab" value="inv">
   <div class="col-md-5">
     <label class="form-label">Buscar</label>
     <input type="text" name="q" class="form-control" placeholder="Nombre, clase, condición o ubicación" value="<?=h($q)?>">
+    <!-- <small class="text-muted">La búsqueda se aplica automáticamente.</small> -->
   </div>
   <div class="col-md-5">
     <label class="form-label">Clase</label>
@@ -46,8 +49,10 @@ $clases = $pdo->query("SELECT id, nombre FROM cat_clases ORDER BY nombre")->fetc
       <?php endforeach; ?>
     </select>
   </div>
-  <div class="col-md-2">
-    <button class="btn btn-primary w-100">Filtrar</button>
+  <div class="col-md-2 d-flex gap-2">
+    <!-- Botón opcional por accesibilidad, pero ya no es necesario usarlo -->
+    <!-- <button class="btn btn-primary w-100" type="submit">Filtrar</button> -->
+    <a class="btn btn-outline-secondary w-100" href="index.php?tab=inv#inv">Limpiar</a>
   </div>
 </form>
 
@@ -102,3 +107,23 @@ $clases = $pdo->query("SELECT id, nombre FROM cat_clases ORDER BY nombre")->fetc
   </tbody>
 </table>
 </div>
+
+<script>
+(function(){
+  const form = document.getElementById('inventario-form');
+  const q = form.querySelector('input[name="q"]');
+  const clase = form.querySelector('select[name="clase_id"]');
+  let t;
+
+  // Auto-submit con debounce al escribir
+  q.addEventListener('input', function(){
+    clearTimeout(t);
+    t = setTimeout(function(){ form.submit(); }, 400);
+  });
+
+  // Auto-submit al cambiar la clase
+  clase.addEventListener('change', function(){
+    form.submit();
+  });
+})();
+</script>

@@ -1,12 +1,16 @@
 <?php ob_start(); require_once __DIR__.'/../config/db.php'; ?>
 <?php require_once __DIR__.'/../config/util.php'; ?>
 <?php
+// Evitar caché para que tablas y vistas se refresquen siempre
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
+// Determinar pestaña activa desde la URL (?tab=...)
 $tab = $_GET['tab'] ?? '';
 $tabs = ['inv','mm','gal','add','cclase','ccond','cubi'];
 if (!in_array($tab, $tabs, true)) { $tab = 'inv'; }
+
+// Mensajes flash
 $flash_ok = flash_get('ok') ?? null;
 ?>
 <!doctype html>
@@ -27,54 +31,103 @@ $flash_ok = flash_get('ok') ?? null;
 <div class="container py-4">
   <?php if ($flash_ok): ?> 
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-      <?=htmlspecialchars($flash_ok)?>
+      <?=htmlspecialchars($flash_ok, ENT_QUOTES, 'UTF-8')?>
       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
   <?php endif; ?>
 
+  <!-- NAV TABS como <a href="#..."> -->
   <ul class="nav nav-tabs" id="tabs" role="tablist">
-    <li class="nav-item"><button class="nav-link <?= $tab==='inv'?'active':'' ?>" data-bs-toggle="tab" data-bs-target="#inv" type="button">Inventario</button></li>
-    <li class="nav-item"><button class="nav-link <?= $tab==='mm'?'active':'' ?>" data-bs-toggle="tab" data-bs-target="#mm" type="button">Mín/Máx</button></li>
-    <li class="nav-item"><button class="nav-link <?= $tab==='gal'?'active':'' ?>" data-bs-toggle="tab" data-bs-target="#gal" type="button">Galería</button></li>
-    <li class="nav-item"><button class="nav-link <?= $tab==='add'?'active':'' ?>" data-bs-toggle="tab" data-bs-target="#add" type="button">Agregar</button></li>
+    <li class="nav-item" role="presentation">
+      <a class="nav-link <?= $tab==='inv'?'active':'' ?>" href="#inv" role="tab">Inventario</a>
+    </li>
+    <li class="nav-item" role="presentation">
+      <a class="nav-link <?= $tab==='mm'?'active':'' ?>" href="#mm" role="tab">Mín/Máx</a>
+    </li>
+    <li class="nav-item" role="presentation">
+      <a class="nav-link <?= $tab==='gal'?'active':'' ?>" href="#gal" role="tab">Galería</a>
+    </li>
+    <li class="nav-item" role="presentation">
+      <a class="nav-link <?= $tab==='add'?'active':'' ?>" href="#add" role="tab">Agregar</a>
+    </li>
+
     <li class="nav-item ms-3"><span class="nav-link disabled text-muted">Catálogos</span></li>
-    <li class="nav-item"><button class="nav-link <?= $tab==='cclase'?'active':'' ?>" data-bs-toggle="tab" data-bs-target="#cclase" type="button">Clases</button></li>
-    <li class="nav-item"><button class="nav-link <?= $tab==='ccond'?'active':'' ?>" data-bs-toggle="tab" data-bs-target="#ccond" type="button">Condición/Estado</button></li>
-    <li class="nav-item"><button class="nav-link <?= $tab==='cubi'?'active':'' ?>" data-bs-toggle="tab" data-bs-target="#cubi" type="button">Ubicaciones</button></li>
+
+    <li class="nav-item" role="presentation">
+      <a class="nav-link <?= $tab==='cclase'?'active':'' ?>" href="#cclase" role="tab">Clases</a>
+    </li>
+    <li class="nav-item" role="presentation">
+      <a class="nav-link <?= $tab==='ccond'?'active':'' ?>" href="#ccond" role="tab">Condición/Estado</a>
+    </li>
+    <li class="nav-item" role="presentation">
+      <a class="nav-link <?= $tab==='cubi'?'active':'' ?>" href="#cubi" role="tab">Ubicaciones</a>
+    </li>
   </ul>
 
   <div class="tab-content border border-top-0 p-3">
-    <div class="tab-pane fade <?= $tab==='inv'?'show active':'' ?>" id="inv"><?php include __DIR__.'/inventario.php'; ?></div>
-    <div class="tab-pane fade <?= $tab==='mm'?'show active':'' ?>" id="mm"><?php include __DIR__.'/minmax.php'; ?></div>
-    <div class="tab-pane fade <?= $tab==='gal'?'show active':'' ?>" id="gal"><?php include __DIR__.'/galeria.php'; ?></div>
-    <div class="tab-pane fade <?= $tab==='add'?'show active':'' ?>" id="add"><?php include __DIR__.'/agregar.php'; ?></div>
+    <div class="tab-pane fade <?= $tab==='inv'?'show active':'' ?>" id="inv" role="tabpanel">
+      <?php include __DIR__.'/inventario.php'; ?>
+    </div>
+    <div class="tab-pane fade <?= $tab==='mm'?'show active':'' ?>" id="mm" role="tabpanel">
+      <?php include __DIR__.'/minmax.php'; ?>
+    </div>
+    <div class="tab-pane fade <?= $tab==='gal'?'show active':'' ?>" id="gal" role="tabpanel">
+      <?php include __DIR__.'/galeria.php'; ?>
+    </div>
+    <div class="tab-pane fade <?= $tab==='add'?'show active':'' ?>" id="add" role="tabpanel">
+      <?php include __DIR__.'/agregar.php'; ?>
+    </div>
 
-    <div class="tab-pane fade <?= $tab==='cclase'?'show active':'' ?>" id="cclase"><?php include __DIR__.'/cat_clases.php'; ?></div>
-    <div class="tab-pane fade <?= $tab==='ccond'?'show active':'' ?>" id="ccond"><?php include __DIR__.'/cat_condiciones.php'; ?></div>
-    <div class="tab-pane fade <?= $tab==='cubi'?'show active':'' ?>" id="cubi"><?php include __DIR__.'/cat_ubicaciones.php'; ?></div>
+    <div class="tab-pane fade <?= $tab==='cclase'?'show active':'' ?>" id="cclase" role="tabpanel">
+      <?php include __DIR__.'/cat_clases.php'; ?>
+    </div>
+    <div class="tab-pane fade <?= $tab==='ccond'?'show active':'' ?>" id="ccond" role="tabpanel">
+      <?php include __DIR__.'/cat_condiciones.php'; ?>
+    </div>
+    <div class="tab-pane fade <?= $tab==='cubi'?'show active':'' ?>" id="cubi" role="tabpanel">
+      <?php include __DIR__.'/cat_ubicaciones.php'; ?>
+    </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Control de tabs sin depender de data-bs-toggle (evita conflictos con formularios) -->
 <script>
 (function(){
-  var params = new URLSearchParams(window.location.search);
-  var tab = params.get('tab');
-  if (tab) {
-    var btn = document.querySelector('button[data-bs-target="#'+tab+'"]');
-    if (btn && window.bootstrap && bootstrap.Tab) {
-      new bootstrap.Tab(btn).show();
-    } else {
-      document.querySelectorAll('.nav-link').forEach(el=>el.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(el=>el.classList.remove('show','active'));
-      var pane = document.querySelector('#'+tab);
-      if (pane) {
-        var b = document.querySelector('button[data-bs-target="#'+tab+'"]');
-        if (b) b.classList.add('active');
-        pane.classList.add('show','active');
-      }
-    }
+  const links = document.querySelectorAll('#tabs a.nav-link');
+  const panes = document.querySelectorAll('.tab-content .tab-pane');
+
+  function activate(tab) {
+    // Desactivar todo
+    links.forEach(a => a.classList.remove('active'));
+    panes.forEach(p => p.classList.remove('show','active'));
+
+    // Activar link + pane objetivo
+    const link = document.querySelector('#tabs a.nav-link[href="#'+tab+'"]');
+    const pane = document.getElementById(tab);
+    if (link) link.classList.add('active');
+    if (pane) pane.classList.add('show','active');
   }
+
+  // Click en tabs: evitar submit/navegación y activar
+  links.forEach(a => {
+    a.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      const tab = a.getAttribute('href').slice(1); // "#inv" -> "inv"
+      activate(tab);
+      // Mantener ?tab= y #hash
+      const url = new URL(location.href);
+      url.searchParams.set('tab', tab);
+      url.hash = tab;
+      history.replaceState({}, '', url);
+    });
+  });
+
+  // Activación inicial por ?tab= o #hash (default inv)
+  const params = new URLSearchParams(location.search);
+  const initial = params.get('tab') || (location.hash ? location.hash.slice(1) : 'inv');
+  activate(initial);
 })();
 </script>
 </body>
