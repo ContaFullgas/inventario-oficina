@@ -20,6 +20,7 @@ $flash_ok = flash_get('ok') ?? null;
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inventario de Oficina</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 <nav class="navbar navbar-dark" style="background:#3B1C32;">
@@ -44,9 +45,9 @@ $flash_ok = flash_get('ok') ?? null;
     <li class="nav-item" role="presentation">
       <a class="nav-link <?= $tab==='mm'?'active':'' ?>" href="#mm" role="tab">Mín/Máx</a>
     </li>
-    <li class="nav-item" role="presentation">
+    <!-- <li class="nav-item" role="presentation">
       <a class="nav-link <?= $tab==='gal'?'active':'' ?>" href="#gal" role="tab">Galería</a>
-    </li>
+    </li> -->
     <li class="nav-item" role="presentation">
       <a class="nav-link <?= $tab==='add'?'active':'' ?>" href="#add" role="tab">Agregar</a>
     </li>
@@ -90,7 +91,7 @@ $flash_ok = flash_get('ok') ?? null;
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 
 <!-- Control de tabs sin depender de data-bs-toggle (evita conflictos con formularios) -->
 <script>
