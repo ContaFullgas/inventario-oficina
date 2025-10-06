@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__.'/../config/auth.php';
+auth_check(); // obliga a iniciar sesión ?>
+
 <?php ob_start(); require_once __DIR__.'/../config/db.php'; ?>
 <?php require_once __DIR__.'/../config/util.php'; ?>
 <?php
@@ -23,11 +27,25 @@ $flash_ok = flash_get('ok') ?? null;
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-<nav class="navbar navbar-dark" style="background:#3B1C32;">
-  <div class="container-fluid">
-    <span class="navbar-brand mb-0 h1 text-warning">Inventario de Oficina</span>
+<nav class="navbar navbar-dark py-2 px-3" style="background:#3B1C32;">
+  <div class="container-fluid px-0">
+    <span class="navbar-brand mb-0 h1 text-warning m-0">Inventario de Oficina</span>
+
+    <div class="d-flex align-items-center gap-2 me-2">
+      <?php $u = auth_user(); ?>
+      <?php if ($u): ?>
+        <span class="text-white-50 small me-1">
+          <?=h($u['usuario'])?> <span class="">[<?=h($u['rol'])?>]</span>
+        </span>
+        <a class="btn btn-sm btn-outline-light px-3" href="logout.php">Salir</a>
+      <?php else: ?>
+        <a class="btn btn-sm btn-outline-light px-3" href="login.php">Ingresar</a>
+      <?php endif; ?>
+    </div>
   </div>
 </nav>
+
+
 
 <div class="container py-4">
   <?php if ($flash_ok): ?> 

@@ -52,7 +52,7 @@ $clases = $pdo->query("SELECT id, nombre FROM cat_clases ORDER BY nombre")->fetc
     </select>
   </div>
   <div class="col-md-2 d-flex gap-2">
-    <button class="btn btn-primary w-100" type="submit">Filtrar</button>
+    <!-- <button class="btn btn-primary w-100" type="submit">Filtrar</button> -->
     <a class="btn btn-outline-secondary w-100" href="index.php?tab=inv#inv">Limpiar</a>
   </div>
 </form>
