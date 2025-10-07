@@ -14,6 +14,14 @@ $tab = $_GET['tab'] ?? '';
 $tabs = ['inv','mm','gal','add','cclase','ccond','cubi'];
 if (!in_array($tab, $tabs, true)) { $tab = 'inv'; }
 
+// ===== Permisos (admin / consulta) =====
+$is_admin   = auth_is_admin();
+$restricted = ['add','cclase','ccond','cubi'];
+// Si no es admin y pidió tab restringida, fuerzo inv
+if (!$is_admin && in_array($tab, $restricted, true)) {
+  $tab = 'inv';
+}
+
 // Mensajes flash
 $flash_ok = flash_get('ok') ?? null;
 ?>
@@ -66,21 +74,24 @@ $flash_ok = flash_get('ok') ?? null;
     <!-- <li class="nav-item" role="presentation">
       <a class="nav-link <?= $tab==='gal'?'active':'' ?>" href="#gal" role="tab">Galería</a>
     </li> -->
-    <li class="nav-item" role="presentation">
-      <a class="nav-link <?= $tab==='add'?'active':'' ?>" href="#add" role="tab">Agregar</a>
-    </li>
 
-    <!-- <li class="nav-item ms-3"><span class="nav-link disabled text-muted">Catálogos</span></li> -->
+    <?php if ($is_admin): ?>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link <?= $tab==='add'?'active':'' ?>" href="#add" role="tab">Agregar</a>
+      </li>
 
-    <li class="nav-item" role="presentation">
-      <a class="nav-link <?= $tab==='cclase'?'active':'' ?>" href="#cclase" role="tab">Clases</a>
-    </li>
-    <li class="nav-item" role="presentation">
-      <a class="nav-link <?= $tab==='ccond'?'active':'' ?>" href="#ccond" role="tab">Condición/Estado</a>
-    </li>
-    <li class="nav-item" role="presentation">
-      <a class="nav-link <?= $tab==='cubi'?'active':'' ?>" href="#cubi" role="tab">Ubicaciones</a>
-    </li>
+      <!-- <li class="nav-item ms-3"><span class="nav-link disabled text-muted">Catálogos</span></li> -->
+
+      <li class="nav-item" role="presentation">
+        <a class="nav-link <?= $tab==='cclase'?'active':'' ?>" href="#cclase" role="tab">Clases</a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link <?= $tab==='ccond'?'active':'' ?>" href="#ccond" role="tab">Condición/Estado</a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link <?= $tab==='cubi'?'active':'' ?>" href="#cubi" role="tab">Ubicaciones</a>
+      </li>
+    <?php endif; ?>
   </ul>
 
   <div class="tab-content border border-top-0 p-3">
@@ -93,19 +104,22 @@ $flash_ok = flash_get('ok') ?? null;
     <div class="tab-pane fade <?= $tab==='gal'?'show active':'' ?>" id="gal" role="tabpanel">
       <?php include __DIR__.'/galeria.php'; ?>
     </div>
-    <div class="tab-pane fade <?= $tab==='add'?'show active':'' ?>" id="add" role="tabpanel">
-      <?php include __DIR__.'/agregar.php'; ?>
-    </div>
 
-    <div class="tab-pane fade <?= $tab==='cclase'?'show active':'' ?>" id="cclase" role="tabpanel">
-      <?php include __DIR__.'/cat_clases.php'; ?>
-    </div>
-    <div class="tab-pane fade <?= $tab==='ccond'?'show active':'' ?>" id="ccond" role="tabpanel">
-      <?php include __DIR__.'/cat_condiciones.php'; ?>
-    </div>
-    <div class="tab-pane fade <?= $tab==='cubi'?'show active':'' ?>" id="cubi" role="tabpanel">
-      <?php include __DIR__.'/cat_ubicaciones.php'; ?>
-    </div>
+    <?php if ($is_admin): ?>
+      <div class="tab-pane fade <?= $tab==='add'?'show active':'' ?>" id="add" role="tabpanel">
+        <?php include __DIR__.'/agregar.php'; ?>
+      </div>
+
+      <div class="tab-pane fade <?= $tab==='cclase'?'show active':'' ?>" id="cclase" role="tabpanel">
+        <?php include __DIR__.'/cat_clases.php'; ?>
+      </div>
+      <div class="tab-pane fade <?= $tab==='ccond'?'show active':'' ?>" id="ccond" role="tabpanel">
+        <?php include __DIR__.'/cat_condiciones.php'; ?>
+      </div>
+      <div class="tab-pane fade <?= $tab==='cubi'?'show active':'' ?>" id="cubi" role="tabpanel">
+        <?php include __DIR__.'/cat_ubicaciones.php'; ?>
+      </div>
+    <?php endif; ?>
   </div>
 </div>
 
@@ -116,6 +130,11 @@ $flash_ok = flash_get('ok') ?? null;
 (function(){
   const links = document.querySelectorAll('#tabs a.nav-link');
   const panes = document.querySelectorAll('.tab-content .tab-pane');
+
+  // 👉 Permisos desde PHP
+  const IS_ADMIN   = <?= $is_admin ? 'true' : 'false' ?>;
+  const RESTRICTED = ['add','cclase','ccond','cubi'];
+  function safeTab(tab){ return (!IS_ADMIN && RESTRICTED.includes(tab)) ? 'inv' : tab; }
 
   function activate(tab) {
     // Desactivar todo
@@ -133,7 +152,8 @@ $flash_ok = flash_get('ok') ?? null;
   links.forEach(a => {
     a.addEventListener('click', (ev) => {
       ev.preventDefault();
-      const tab = a.getAttribute('href').slice(1); // "#inv" -> "inv"
+      let tab = a.getAttribute('href').slice(1); // "#inv" -> "inv"
+      tab = safeTab(tab);
       activate(tab);
       // Mantener ?tab= y #hash
       const url = new URL(location.href);
@@ -145,7 +165,8 @@ $flash_ok = flash_get('ok') ?? null;
 
   // Activación inicial por ?tab= o #hash (default inv)
   const params = new URLSearchParams(location.search);
-  const initial = params.get('tab') || (location.hash ? location.hash.slice(1) : 'inv');
+  let initial = params.get('tab') || (location.hash ? location.hash.slice(1) : 'inv');
+  initial = safeTab(initial);
   activate(initial);
 })();
 </script>

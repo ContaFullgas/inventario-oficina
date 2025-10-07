@@ -2,6 +2,9 @@
 require_once __DIR__.'/../config/db.php';
 require_once __DIR__.'/../config/util.php';
 
+// Permisos (index ya cargó auth.php; usamos helper)
+$is_admin = function_exists('auth_is_admin') ? auth_is_admin() : false;
+
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 $clase_id = (isset($_GET['clase_id']) && $_GET['clase_id'] !== '') ? (int)$_GET['clase_id'] : null;
 
@@ -70,7 +73,9 @@ $clases = $pdo->query("SELECT id, nombre FROM cat_clases ORDER BY nombre")->fetc
       <th>Mín</th>
       <th>Máx</th>
       <th>Estado</th>
-      <th>Acciones</th>
+      <?php if ($is_admin): ?>
+        <th>Acciones</th>
+      <?php endif; ?>
     </tr>
   </thead>
   <tbody>
@@ -105,6 +110,7 @@ $clases = $pdo->query("SELECT id, nombre FROM cat_clases ORDER BY nombre")->fetc
       <td><?=intval($it['min_stock'])?></td>
       <td><?=intval($it['max_stock'])?></td>
       <td><span class="badge <?=$badge?>"><?=$estado?></span></td>
+      <?php if ($is_admin): ?>
       <td class="no-modal">
         <a class="btn btn-sm btn-outline-primary" href="editar.php?id=<?=intval($it['id'])?>">Editar</a>
         <form action="eliminar.php" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este registro?');">
@@ -113,6 +119,7 @@ $clases = $pdo->query("SELECT id, nombre FROM cat_clases ORDER BY nombre")->fetc
           <button class="btn btn-sm btn-outline-danger">Eliminar</button>
         </form>
       </td>
+      <?php endif; ?>
     </tr>
     <?php endforeach; ?>
   </tbody>
@@ -445,4 +452,3 @@ $clases = $pdo->query("SELECT id, nombre FROM cat_clases ORDER BY nombre")->fetc
   });
 })();
 </script>
-
