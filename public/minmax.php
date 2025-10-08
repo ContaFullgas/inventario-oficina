@@ -23,20 +23,29 @@ $sql = "SELECT
         LEFT JOIN cat_ubicaciones c3 ON c3.id = i.ubicacion_id
         WHERE 1";
 
+// ⬇️ Sustituye todo este bloque de IF por uno que use HAVING:
 if ($estado !== '') {
+  // usar HAVING para que el filtro coincida EXACTO con el CASE
   if ($estado === 'reponer') {
-    $sql .= " AND (i.cantidad <= i.min_stock)";
+    $sql .= " HAVING estado_calc = 'Reponer'";
   } elseif ($estado === 'bajo') {
-    $sql .= " AND (i.cantidad > i.min_stock AND i.cantidad < i.max_stock)";
+    $sql .= " HAVING estado_calc = 'Bajo'";
   } elseif ($estado === 'ok') {
-    $sql .= " AND (i.cantidad >= i.max_stock)";
+    $sql .= " HAVING estado_calc = 'OK'";
   }
 }
 
-$sql .= " ORDER BY
-            (i.cantidad <= i.min_stock) DESC,
-            (i.cantidad <  i.max_stock) DESC,
-            i.nombre";
+// Si no hay filtro de estado, ordena por prioridad (Reponer, Bajo, OK)
+if ($estado === '') {
+  $sql .= " ORDER BY
+              (i.cantidad <= i.min_stock) DESC,
+              (i.cantidad <  i.max_stock) DESC,
+              i.nombre";
+} else {
+  // Si ya filtraste por un estado, ordena solo por nombre
+  $sql .= " ORDER BY i.nombre";
+}
+
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute([]);
