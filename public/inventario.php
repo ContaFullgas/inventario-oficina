@@ -91,7 +91,7 @@ $clases = $pdo->query("SELECT id, nombre FROM cat_clases ORDER BY nombre")->fetc
       <td style="width:72px;">
         <?php if (!empty($it['imagen'])): ?>
           <a href="#" class="img-thumb d-inline-block" data-img="<?=h($it['imagen'])?>" title="Ver imagen">
-            <img src="../uploads/<?=h($it['imagen'])?>" class="img-thumbnail" style="width:64px;height:64px;object-fit:cover;" alt="">
+            <img src="uploads/<?=h($it['imagen'])?>" class="img-thumbnail" style="width:64px;height:64px;object-fit:cover;" alt="">
           </a>
         <?php else: ?>
           <div class="bg-secondary" style="width:64px;height:64px;border-radius:.5rem;"></div>
@@ -112,8 +112,8 @@ $clases = $pdo->query("SELECT id, nombre FROM cat_clases ORDER BY nombre")->fetc
       <td><span class="badge <?=$badge?>"><?=$estado?></span></td>
       <?php if ($is_admin): ?>
       <td class="no-modal">
-        <a class="btn btn-sm btn-outline-primary" href="editar.php?id=<?=intval($it['id'])?>">Editar</a>
-        <form action="eliminar.php" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este registro?');">
+        <a class="btn btn-sm btn-outline-primary" href="public/editar.php?id=<?=intval($it['id'])?>">Editar</a>
+        <form action="public/eliminar.php" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este registro?');">
           <?=csrf_field()?>
           <input type="hidden" name="id" value="<?=intval($it['id'])?>">
           <button class="btn btn-sm btn-outline-danger">Eliminar</button>
@@ -328,7 +328,7 @@ $clases = $pdo->query("SELECT id, nombre FROM cat_clases ORDER BY nombre")->fetc
       // Si el modal YA está visible, ahora sí podemos calcular tamaños y dibujar
       if (modalShown) resetView(1);
     };
-    loaderImg.src = '../uploads/' + imgFile;
+    loaderImg.src = 'uploads/' + imgFile;
 
     const m = ensureModal();
     if (m) m.show();

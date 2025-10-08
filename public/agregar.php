@@ -9,7 +9,7 @@ $clases = $pdo->query("SELECT id, nombre FROM cat_clases ORDER BY nombre")->fetc
 $conds  = $pdo->query("SELECT id, nombre FROM cat_condiciones ORDER BY nombre")->fetchAll();
 $ubis   = $pdo->query("SELECT id, nombre FROM cat_ubicaciones ORDER BY nombre")->fetchAll();
 ?>
-<form method="post" enctype="multipart/form-data" class="row g-3" action="agregar_guardar.php">
+<form method="post" enctype="multipart/form-data" class="row g-3" action="public/agregar_guardar.php">
   <?=csrf_field()?>
 
   <div class="col-md-6">

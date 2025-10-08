@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       try {
         $pdo->prepare("INSERT INTO cat_ubicaciones (nombre) VALUES (:n)")->execute([':n'=>$nombre]);
         flash_set('ok','Ubicación agregada');
-        header('Location: index.php?tab=cubi#cubi', true, 303); exit;
+        header('Location: ../index.php?tab=cubi#cubi', true, 303); exit;
       } catch (PDOException $e) {
         $errors[] = 'No se pudo agregar (¿duplicado?)';
       }
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->prepare("UPDATE cat_ubicaciones SET nombre=:n WHERE id=:id")
             ->execute([':n'=>$nombre, ':id'=>$id]);
         flash_set('ok','Ubicación actualizada');
-        header('Location: index.php?tab=cubi#cubi', true, 303); exit;
+        header('Location: ../index.php?tab=cubi#cubi', true, 303); exit;
       } catch (PDOException $e) {
         $errors[] = 'No se pudo actualizar (¿duplicado?)';
       }
@@ -52,13 +52,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash_set('ok','No se puede eliminar: está en uso por productos.');
       }
     }
-    header('Location: index.php?tab=cubi#cubi', true, 303); exit;
+    header('Location: ../index.php?tab=cubi#cubi', true, 303); exit;
   }
 }
 
 $rows = $pdo->query("SELECT * FROM cat_ubicaciones ORDER BY nombre")->fetchAll();
 ?>
-<form class="row g-2 mb-3" method="post" action="cat_ubicaciones.php">
+<form class="row g-2 mb-3" method="post" action="public/cat_ubicaciones.php">
   <?=csrf_field()?>
   <input type="hidden" name="accion_ubi" value="add">
   <div class="col-md-8">
@@ -84,7 +84,7 @@ $rows = $pdo->query("SELECT * FROM cat_ubicaciones ORDER BY nombre")->fetchAll()
       <?php if ($edit_id === (int)$r['id']): ?>
         <tr>
           <td>
-            <form method="post" class="row g-2" action="cat_ubicaciones.php">
+            <form method="post" class="row g-2" action="public/cat_ubicaciones.php">
               <?=csrf_field()?>
               <input type="hidden" name="accion_ubi" value="upd">
               <input type="hidden" name="id" value="<?=$r['id']?>">
@@ -103,7 +103,7 @@ $rows = $pdo->query("SELECT * FROM cat_ubicaciones ORDER BY nombre")->fetchAll()
           <td><?=h($r['nombre'])?></td>
           <td>
             <a class="btn btn-sm btn-outline-primary" href="index.php?tab=cubi&edit=<?=$r['id']?>#cubi">Editar</a>
-            <form method="post" class="d-inline" action="cat_ubicaciones.php" onsubmit="return confirm('¿Eliminar?');">
+            <form method="post" class="d-inline" action="public/cat_ubicaciones.php" onsubmit="return confirm('¿Eliminar?');">
               <?=csrf_field()?>
               <input type="hidden" name="accion_ubi" value="del">
               <input type="hidden" name="id" value="<?=$r['id']?>">

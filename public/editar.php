@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ]);
 
     flash_set('ok','Cambios guardados correctamente');
-    $dest = "index.php?tab=inv#inv";
+    $dest = "../index.php?tab=inv#inv";
     if (!headers_sent()) { header("Location: $dest", true, 303); exit; }
     echo '<!doctype html><html><head><meta http-equiv="refresh" content="0;url='.htmlspecialchars($dest,ENT_QUOTES,'UTF-8').'"></head><body><script>location.replace("'.htmlspecialchars($dest,ENT_QUOTES,'UTF-8').'");</script><a href="'.htmlspecialchars($dest,ENT_QUOTES,'UTF-8').'">Continuar</a></body></html>';
     exit;
@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="container py-4">
-  <a href="index.php?tab=inv#inv" class="btn btn-link mb-3">← Volver a Inventario</a>
+  <a href="../index.php?tab=inv#inv" class="btn btn-link mb-3">← Volver a Inventario</a>
   <h3>Editar: <?=h($item['nombre'])?></h3>
 
   <?php if (!empty($errors)): ?>
@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <option value="<?=$c['id']?>" <?=$c['id']==($item['clase_id']??null)?'selected':''?>><?=h($c['nombre'])?></option>
         <?php endforeach; ?>
       </select>
-      <small><a href="index.php?tab=cclase#cclase">Gestionar clases</a></small>
+      <small><a href="../index.php?tab=cclase#cclase">Gestionar clases</a></small>
     </div>
 
     <div class="col-md-3">
@@ -139,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <option value="<?=$c['id']?>" <?=$c['id']==($item['condicion_id']??null)?'selected':''?>><?=h($c['nombre'])?></option>
         <?php endforeach; ?>
       </select>
-      <small><a href="index.php?tab=ccond#ccond">Gestionar condiciones</a></small>
+      <small><a href="../index.php?tab=ccond#ccond">Gestionar condiciones</a></small>
     </div>
 
     <div class="col-md-3">
@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <option value="<?=$u['id']?>" <?=$u['id']==($item['ubicacion_id']??null)?'selected':''?>><?=h($u['nombre'])?></option>
         <?php endforeach; ?>
       </select>
-      <small><a href="index.php?tab=cubi#cubi">Gestionar ubicaciones</a></small>
+      <small><a href="../index.php?tab=cubi#cubi">Gestionar ubicaciones</a></small>
     </div>
 
     <div class="col-md-6">
@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="col-12">
       <button class="btn btn-primary">Guardar cambios</button>
-      <a class="btn btn-secondary" href="index.php?tab=inv#inv">Cancelar</a>
+      <a class="btn btn-secondary" href="../index.php?tab=inv#inv">Cancelar</a>
     </div>
   </form>
 </body>

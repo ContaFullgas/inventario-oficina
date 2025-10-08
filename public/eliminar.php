@@ -7,7 +7,7 @@ auth_check();
 auth_require_admin();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  header('Location: index.php?tab=inv#inv', true, 302);
+  header('Location: ../index.php?tab=inv#inv', true, 302);
   exit;
 }
 
@@ -16,7 +16,7 @@ check_csrf();
 $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 if ($id <= 0) {
   flash_set('ok', 'ID inválido');
-  header('Location: index.php?tab=inv#inv', true, 303);
+  header('Location: ../index.php?tab=inv#inv', true, 303);
   exit;
 }
 
@@ -27,7 +27,7 @@ $row = $stmt->fetch();
 
 if (!$row) {
   flash_set('ok', 'El registro no existe');
-  header('Location: index.php?tab=inv#inv', true, 303);
+  header('Location: ../index.php?tab=inv#inv', true, 303);
   exit;
 }
 
@@ -44,5 +44,5 @@ $del = $pdo->prepare("DELETE FROM items WHERE id = :id");
 $del->execute([':id' => $id]);
 
 flash_set('ok', 'Herramienta eliminada correctamente');
-header('Location: index.php?tab=inv#inv', true, 303);
+header('Location: ../index.php?tab=inv#inv', true, 303);
 exit;

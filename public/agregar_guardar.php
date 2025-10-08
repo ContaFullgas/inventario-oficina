@@ -4,7 +4,7 @@ require_once __DIR__.'/../config/db.php';
 require_once __DIR__.'/../config/util.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  header('Location: index.php?tab=add#add', true, 302);
+  header('Location: ../index.php?tab=add#add', true, 302);
   exit;
 }
 
@@ -42,7 +42,7 @@ if (!empty($_FILES['imagen']['name'])) {
 
 if ($errors) {
   flash_set('ok', 'Errores: ' . implode(' | ', $errors));
-  header('Location: index.php?tab=add#add', true, 303);
+  header('Location: ../index.php?tab=add#add', true, 303);
   exit;
 }
 
@@ -64,7 +64,7 @@ $stmt->execute([
 ]);
 
 flash_set('ok', '¡Producto agregado correctamente!');
-$dest = 'index.php?tab=inv#inv';
+$dest = '../index.php?tab=inv#inv';
 
 if (!headers_sent()) {
   header("Location: $dest", true, 303);
