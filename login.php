@@ -32,10 +32,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ingresar</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <style>
     body{
       min-height:100vh;
-      background: linear-gradient(135deg, #ff8a00, #ffa94d); /* naranja */
+      background-image: url("assets/fondo2.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
       display:flex; align-items:center; justify-content:center;
       padding: 16px;
     }
@@ -44,10 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       border-radius:16px;
       box-shadow: 0 .75rem 2rem rgba(0,0,0,.25);
       overflow:hidden;
-      background:#fff;
+      background:#cfd4da;
     }
     .brand {
-      background: rgba(255,255,255,.12);
+      background:#cfd4da;
       text-align:center;
       padding: 16px 12px 8px;
     }
@@ -70,22 +76,27 @@ html, body { height: 100%; }
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-  background: linear-gradient(135deg, #ff8a00, #ffa94d);
+  /*background: linear-gradient(135deg, #ff8a00, #ffa94d);*/
   /* Fondo naranja */
+  background-image: url("assets/fondo5.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   background-attachment: fixed;
   color: #212529;
 }
 
 /* Si cargas Oswald desde Google Fonts, úsala donde convenga */
 :root {
-  --orange-700: #ff8a00;
-  --orange-600: #ff991f;
-  --orange-500: #ffa94d;
-  --orange-400: #ffbf7a;
-  --orange-300: #ffd3a6;
-  --bg-card: #ffffff;
+  --red-700: #84202a;
+  --red-600: #b12a38;
+  --red-500: #dc3546;
+  --red-400: #e45d6b;
+  --red-300: #ea8690;
+  --bg-box: #3a6168;
+  --bg-card: #fff;
   --text-muted: #6c757d;
-  --ring: rgba(255, 138, 0, .35);
+  --ring: rgba(255, 0, 0, .35);
 }
 
 /* ====== Layout general ====== */
@@ -114,14 +125,12 @@ body {
 .login-card {
   width: 100%;
   max-width: 440px;
-  background: var(--bg-card);
+  background-color: $red-600;
   border-radius: 18px;
   overflow: hidden;
   /* Borde y sombra con tinte naranja */
-  border: 1px solid rgba(255, 138, 0, .25);
-  box-shadow:
-    0 10px 30px rgba(0,0,0,.25),
-    0 0 0 8px rgba(255, 138, 0, .06);
+  border: 1px solid rgba(255, 0, 0, 1.0);
+  box-shadow: 0px 0px 10px 15px rgba(255, 0, 0, 0.38);
   padding: 22px;
 }
 
@@ -136,18 +145,18 @@ body {
 /* ====== Inputs estilizados con Bootstrap ====== */
 .input-group .input-group-text {
   background: #fff7f0;                  /* naranja MUY claro */
-  border: 1px solid rgba(255, 138, 0, .35);
-  color: var(--orange-700);
+  border: 1px solid rgba(255, 0, 0, .35);
+  color: var(--red-700);
 }
 
 .form-control {
-  border: 1px solid rgba(255, 138, 0, .35);
+  border: 1px solid rgba(255, 0, 0, .35);
   background: #fff; /* mejor contraste que blanco roto */
 }
 
 .form-control:focus,
 .input-group .form-control:focus {
-  border-color: var(--orange-600);
+  border-color: var(--red-600);
   box-shadow: 0 0 0 .2rem var(--ring);
 }
 
@@ -161,31 +170,31 @@ body {
 
 /* ====== Botón de Login ====== */
 .btn-login {
-  background: var(--orange-700);
-  border: 1px solid var(--orange-700);
+  background: var(--red-700);
+  border: 1px solid var(--red-700);
   color: #fff;
   border-radius: 10px;
   font-weight: 600;
   letter-spacing: .2px;
   transition: transform .04s ease, box-shadow .2s ease, background .2s ease;
-  box-shadow: 0 6px 18px rgba(255, 138, 0, .35);
+  box-shadow: 0 6px 18px rgba(255, 0, 0, .35);
 }
 
 .btn-login:hover {
-  background: var(--orange-600);
-  border-color: var(--orange-600);
+  background: var(--red-600);
+  border-color: var(--red-600);
   color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(255, 138, 0, .45);
+  box-shadow: 0 10px 22px rgba(255, 0, 0, .45);
 }
 
 .btn-login:active {
   transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(255, 138, 0, .3) inset;
+  box-shadow: 0 4px 12px rgba(255, 0, 0, .3) inset;
 }
 
 .btn-login:focus {
-  box-shadow: 0 0 0 .2rem var(--ring), 0 6px 18px rgba(255, 138, 0, .35);
+  box-shadow: 0 0 0 .2rem var(--red-400), 0 6px 18px rgba(255, 0, 0, .35);
 }
 
 /* ====== Alertas ====== */
@@ -219,15 +228,15 @@ body {
       <?php endif; ?>
 
       <form method="post" autocomplete="off" novalidate>
-        <div class="mb-3">
-          <label class="form-label">Usuario</label>
-          <input type="text" name="usuario" class="form-control" required autofocus>
+        <div class="input-group mb-3">
+          <span class="input-group-text" id="basic-addon1"><i class="bi bi-person-fill"></i></span>
+          <input type="text" name="usuario" class="form-control" required autofocus placeholder="Usuario">
         </div>
-        <div class="mb-3">
-          <label class="form-label">Contraseña</label>
-          <input type="password" name="clave" class="form-control" required>
+        <div class="input-group mb-3">
+          <label class="input-group-text" id="basic-addon1"><i class="bi bi-key-fill"></i></label>
+          <input type="password" name="clave" class="form-control" required placeholder="Contraseña">
         </div>
-        <button class="btn btn-dark w-100" type="submit">Ingresar</button>
+        <button class="btn btn-dark w-100" type="submit"><i class="bi bi-box-arrow-in-right"></i> Ingresar</button>
       </form>
 
       <div class="text-center mt-3">

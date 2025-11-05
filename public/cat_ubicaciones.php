@@ -58,15 +58,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $rows = $pdo->query("SELECT * FROM cat_ubicaciones ORDER BY nombre")->fetchAll();
 ?>
-<form class="row g-2 mb-3" method="post" action="public/cat_ubicaciones.php">
+
+<!-- Formulario de agregar -->
+<form id="inventario-form" class="row g-3 mb-4" method="post" action="public/cat_ubicaciones.php">
   <?=csrf_field()?>
   <input type="hidden" name="accion_ubi" value="add">
-  <div class="col-md-8">
-    <label class="form-label">Nueva ubicación</label>
-    <input name="nombre" class="form-control" required>
+  
+  <div class="col-md-9">
+    <div class="input-group">
+      <label class="input-group-text text-white" style="background-color: #F59E0B;">
+        <i class="bi bi-geo-alt-fill"></i>
+      </label>
+      <input name="nombre" class="form-control" placeholder="Ubicación" required>
+    </div>
   </div>
-  <div class="col-md-4 d-flex align-items-end">
-    <button class="btn btn-success w-100">Agregar</button>
+  
+  <div class="col-md-3">
+    <button class="btn btn-success w-100">
+      <i class="bi bi-plus-lg"></i> Agregar
+    </button>
   </div>
 </form>
 
@@ -76,43 +86,67 @@ $rows = $pdo->query("SELECT * FROM cat_ubicaciones ORDER BY nombre")->fetchAll()
   </div>
 <?php endif; ?>
 
-<div class="table-responsive">
-<table class="table table-sm table-hover align-middle">
-  <thead><tr><th>Ubicación</th><th style="width:220px;">Acciones</th></tr></thead>
-  <tbody>
-    <?php foreach($rows as $r): ?>
-      <?php if ($edit_id === (int)$r['id']): ?>
+<div class="table-container">
+  <div class="items-table-wrapper table-responsive">
+    <table id="tabla-inventario" class="items-table table table-hover">
+      <thead>
         <tr>
-          <td>
-            <form method="post" class="row g-2" action="public/cat_ubicaciones.php">
-              <?=csrf_field()?>
-              <input type="hidden" name="accion_ubi" value="upd">
-              <input type="hidden" name="id" value="<?=$r['id']?>">
-              <div class="col-12">
-                <input name="nombre" class="form-control" required value="<?=h($r['nombre'])?>">
-              </div>
-          </td>
-          <td class="d-flex gap-2">
-              <button class="btn btn-sm btn-primary">Guardar</button>
-              <a class="btn btn-sm btn-secondary" href="index.php?tab=cubi#cubi">Cancelar</a>
-            </form>
-          </td>
+          <th><i class="bi bi-tag"></i> UBICACIÓN</th>
+          <th><i class="bi bi-gear"></i>ACCIONES</th>
         </tr>
-      <?php else: ?>
-        <tr>
-          <td><?=h($r['nombre'])?></td>
-          <td>
-            <a class="btn btn-sm btn-outline-primary" href="index.php?tab=cubi&edit=<?=$r['id']?>#cubi">Editar</a>
-            <form method="post" class="d-inline" action="public/cat_ubicaciones.php" onsubmit="return confirm('¿Eliminar?');">
-              <?=csrf_field()?>
-              <input type="hidden" name="accion_ubi" value="del">
-              <input type="hidden" name="id" value="<?=$r['id']?>">
-              <button class="btn btn-sm btn-outline-danger">Eliminar</button>
-            </form>
-          </td>
-        </tr>
-      <?php endif; ?>
-    <?php endforeach; ?>
-  </tbody>
-</table>
+      </thead>
+      <tbody>
+        <?php foreach($rows as $r): ?>
+          <?php if ($edit_id === (int)$r['id']): ?>
+            <tr>
+              <td>
+                <form method="post" class="row g-2" action="public/cat_ubicaciones.php">
+                  <?=csrf_field()?>
+                  <input type="hidden" name="accion_ubi" value="upd">
+                  <input type="hidden" name="id" value="<?=$r['id']?>">
+                  <div class="col-12">
+                    <div class="input-group">
+                      <label class="input-group-text text-white" style="background-color: #F59E0B;">
+                        <i class="bi bi-geo-alt-fill"></i>
+                      </label>
+                      <input name="nombre" class="form-control" required value="<?=h($r['nombre'])?>">
+                    </div>
+                  </div>
+              </td>
+              <td class="text-center">
+                  <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-sm btn-primary">
+                      <i class="bi bi-check-lg"></i> Guardar
+                    </button>
+                    <a class="btn btn-sm btn-secondary" href="index.php?tab=cubi#cubi">
+                      <i class="bi bi-x-lg"></i> Cancelar
+                    </a>
+                  </div>
+                </form>
+              </td>
+            </tr>
+          <?php else: ?>
+            <tr>
+              <td><?=h($r['nombre'])?></td>
+              <td class="text-center">
+                <div class="btn-action-group">
+                  <a class="btn-action btn-action-edit" href="index.php?tab=cubi&edit=<?=$r['id']?>#cubi" title="Editar">
+                    <i class="bi bi-pencil-square"></i>
+                  </a>
+                  <form method="post" class="d-inline" action="public/cat_ubicaciones.php" onsubmit="return confirm('¿Eliminar?');">
+                    <?=csrf_field()?>
+                    <input type="hidden" name="accion_ubi" value="del">
+                    <input type="hidden" name="id" value="<?=$r['id']?>">
+                    <button class="btn-action btn-action-delete" title="Eliminar">
+                      <i class="bi bi-trash-fill"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <?php endif; ?>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
 </div>
