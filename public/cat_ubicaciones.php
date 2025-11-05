@@ -133,14 +133,16 @@ $rows = $pdo->query("SELECT * FROM cat_ubicaciones ORDER BY nombre")->fetchAll()
                   <a class="btn-action btn-action-edit" href="index.php?tab=cubi&edit=<?=$r['id']?>#cubi" title="Editar">
                     <i class="bi bi-pencil-square"></i>
                   </a>
-                  <form method="post" class="d-inline" action="public/cat_ubicaciones.php" onsubmit="return confirm('¿Eliminar?');">
+
+                  <form method="post" class="d-inline" action="public/cat_ubicaciones.php">
                     <?=csrf_field()?>
                     <input type="hidden" name="accion_ubi" value="del">
                     <input type="hidden" name="id" value="<?=$r['id']?>">
-                    <button class="btn-action btn-action-delete" title="Eliminar">
+                    <button type="button" class="btn-action btn-action-delete" title="Eliminar">
                       <i class="bi bi-trash-fill"></i>
                     </button>
                   </form>
+
                 </div>
               </td>
             </tr>

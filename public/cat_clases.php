@@ -463,9 +463,10 @@ $rows = $pdo->query("SELECT * FROM cat_clases ORDER BY nombre")->fetchAll();
                     <i class="bi bi-pencil-square"></i>
                   </a>
                   
-                  <form action="public/eliminar.php" method="post" class="d-inline">
+                  <form action="public/cat_clases.php" method="post" class="d-inline">
                     <?= csrf_field() ?>
-                    <input type="hidden" name="id" value="<?= intval($it['id']) ?>">
+                    <input type="hidden" name="accion_clase" value="del">
+                    <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
                     <button type="button" class="btn-action btn-action-delete" title="Eliminar">
                       <i class="bi bi-trash-fill"></i>
                     </button>

@@ -383,14 +383,16 @@ $rows = $pdo->query("SELECT * FROM cat_condiciones ORDER BY nombre")->fetchAll()
                   <a class="btn-action btn-action-edit" href="index.php?tab=ccond&edit=<?=$r['id']?>#ccond" title="Editar">
                     <i class="bi bi-pencil-square"></i>
                   </a>
-                  <form method="post" class="d-inline" action="public/cat_condiciones.php" onsubmit="return confirm('¿Eliminar?');">
+
+                  <form method="post" class="d-inline" action="public/cat_condiciones.php">
                     <?=csrf_field()?>
                     <input type="hidden" name="accion_cond" value="del">
                     <input type="hidden" name="id" value="<?=$r['id']?>">
-                    <button class="btn-action btn-action-delete" title="Eliminar">
+                    <button type="button" class="btn-action btn-action-delete" title="Eliminar">
                       <i class="bi bi-trash-fill"></i>
                     </button>
                   </form>
+
                 </div>
               </td>
             </tr>
