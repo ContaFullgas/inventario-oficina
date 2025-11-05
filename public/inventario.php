@@ -1110,51 +1110,7 @@ function buildUrl($params) {
   </div>
 </div>
 
-        <!--Modal eliminación -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title">
-          <i class="bi bi-exclamation-triangle-fill text-warning"></i>
-          Confirmar Eliminación
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body text-center">
-
-        <div class="delete-icon-wrapper mb-3">
-          <i class="bi bi-trash-fill"></i>
-        </div>
-
-        <div id="deleteItemName" class="fw-bold fs-5 mb-2">Nombre del registro</div>
-
-        <p class="delete-warning-text">
-          <span class="delete-warning-highlight text-danger fw-semibold">⚠️ Esta acción no se puede deshacer.</span><br>
-          ¿Estás seguro que deseas eliminar este registro permanentemente?
-        </p>
-
-      </div>
-
-      <div class="modal-footer justify-content-between">
-
-        <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">
-          <i class="bi bi-x-circle"></i>
-          <span>Cancelar</span>
-        </button>
-
-        <button type="button" class="btn btn-delete" id="confirmDeleteBtn">
-          <i class="bi bi-trash-fill"></i>
-          <span>Eliminar</span>
-        </button>
-
-      </div>
-
-    </div>
-  </div>
-</div>
+       
 
 
 
@@ -1404,61 +1360,4 @@ function buildUrl($params) {
   });
 })();
 
-<script>
-  //Script para el botón eliminar del modal
-(function() {
-  'use strict';
-  let currentForm = null;
-  let bsDeleteModal = null;
-
-  function getModal() {
-    const el = document.getElementById('deleteModal');
-    if (!el) return null;
-    if (!bsDeleteModal && window.bootstrap?.Modal) {
-      bsDeleteModal = new bootstrap.Modal(el, {backdrop:true, keyboard:true, focus:true});
-    }
-    return { el, inst: bsDeleteModal };
-  }
-
-  function cleanBackdrops() {
-    document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
-  }
-
-  document.body.addEventListener('click', function(e) {
-    const btn = e.target.closest('.btn-action-delete');
-    if (!btn) return;
-
-    const { el, inst } = getModal() || {};
-    if (!el || !inst) return;
-
-    currentForm = btn.closest('form');
-    if (!currentForm) return;
-
-    const row = btn.closest('tr');
-    const nameEl = row?.querySelector('.item-nombre') || row?.querySelector('td:first-child');
-    const name = nameEl ? nameEl.textContent.trim() : 'este registro';
-    const nameNode = document.getElementById('deleteItemName');
-    if (nameNode) nameNode.textContent = name;
-
-    inst.show();
-  }, true);
-
-  document.addEventListener('click', function(e) {
-    const btn = e.target.closest('#confirmDeleteBtn');
-    if (!btn) return;
-
-    e.preventDefault();
-    const modal = getModal()?.inst;
-    if (modal) modal.hide();
-
-    setTimeout(function() {
-      cleanBackdrops();
-      if (currentForm) currentForm.submit();
-      currentForm = null;
-    }, 200);
-  });
-})();
 </script>

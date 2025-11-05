@@ -462,6 +462,7 @@ $rows = $pdo->query("SELECT * FROM cat_clases ORDER BY nombre")->fetchAll();
                   <a class="btn-action btn-action-edit" href="index.php?tab=cclase&edit=<?=$r['id']?>#cclase" title="Editar">
                     <i class="bi bi-pencil-square"></i>
                   </a>
+                  
                   <form action="public/eliminar.php" method="post" class="d-inline">
                     <?= csrf_field() ?>
                     <input type="hidden" name="id" value="<?= intval($it['id']) ?>">
@@ -469,6 +470,7 @@ $rows = $pdo->query("SELECT * FROM cat_clases ORDER BY nombre")->fetchAll();
                       <i class="bi bi-trash-fill"></i>
                     </button>
                   </form>
+
                 </div>
               </td>
             </tr>
@@ -512,6 +514,52 @@ $rows = $pdo->query("SELECT * FROM cat_clases ORDER BY nombre")->fetchAll();
           <span>Eliminar</span>
         </button>
       </div>
+    </div>
+  </div>
+</div> -->
+
+<!--Modal eliminación -->
+<!-- <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+          Confirmar Eliminación
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+
+        <div class="delete-icon-wrapper mb-3">
+          <i class="bi bi-trash-fill"></i>
+        </div>
+
+        <div id="deleteItemName" class="fw-bold fs-5 mb-2">Nombre del registro</div>
+
+        <p class="delete-warning-text">
+          <span class="delete-warning-highlight text-danger fw-semibold">⚠️ Esta acción no se puede deshacer.</span><br>
+          ¿Estás seguro que deseas eliminar este registro permanentemente?
+        </p>
+
+      </div>
+
+      <div class="modal-footer justify-content-between">
+
+        <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle"></i>
+          <span>Cancelar</span>
+        </button>
+
+        <button type="button" class="btn btn-delete" id="confirmDeleteBtn">
+          <i class="bi bi-trash-fill"></i>
+          <span>Eliminar</span>
+        </button>
+
+      </div>
+
     </div>
   </div>
 </div> -->
