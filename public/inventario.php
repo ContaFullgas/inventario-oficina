@@ -994,13 +994,15 @@ function buildUrl($params) {
                    title="Editar">
                   <i class="bi bi-pencil-square"></i>
                 </a>
-              <form action="public/eliminar.php" method="post" style="display:inline;">
-               <?=csrf_field()?>
-                 <input type="hidden" name="id" value="<?=intval($it['id'])?>">
-                  <button class="btn-action btn-action-delete" type="submit" title="Eliminar">
-                    <i class="bi bi-trash-fill"></i>
-                  </button>
+
+              <form action="public/eliminar.php" method="post" class="d-inline">
+                <?= csrf_field() ?>
+                <input type="hidden" name="id" value="<?= intval($it['id']) ?>">
+                <button type="button" class="btn-action btn-action-delete" title="Eliminar">
+                  <i class="bi bi-trash-fill"></i>
+                </button>
               </form>
+
               </div>
             </td>
             <?php endif; ?>
@@ -1107,42 +1109,55 @@ function buildUrl($params) {
     </div>
   </div>
 </div>
+
         <!--Modal eliminación -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
+
       <div class="modal-header">
         <h5 class="modal-title">
-          <i class="bi bi-exclamation-triangle-fill"></i>
+          <i class="bi bi-exclamation-triangle-fill text-warning"></i>
           Confirmar Eliminación
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      
-      <div class="modal-body">
-        <div class="delete-icon-wrapper">
+
+      <div class="modal-body text-center">
+
+        <div class="delete-icon-wrapper mb-3">
           <i class="bi bi-trash-fill"></i>
         </div>
-        <div id="deleteItemName">Nombre del registro</div>
+
+        <div id="deleteItemName" class="fw-bold fs-5 mb-2">Nombre del registro</div>
+
         <p class="delete-warning-text">
-          <span class="delete-warning-highlight">⚠️ Esta acción no se puede deshacer.</span><br>
+          <span class="delete-warning-highlight text-danger fw-semibold">⚠️ Esta acción no se puede deshacer.</span><br>
           ¿Estás seguro que deseas eliminar este registro permanentemente?
         </p>
+
       </div>
-      
-      <div class="modal-footer">
+
+      <div class="modal-footer justify-content-between">
+
         <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">
           <i class="bi bi-x-circle"></i>
           <span>Cancelar</span>
         </button>
+
         <button type="button" class="btn btn-delete" id="confirmDeleteBtn">
           <i class="bi bi-trash-fill"></i>
           <span>Eliminar</span>
         </button>
+
       </div>
+
     </div>
   </div>
 </div>
+
+
+
 
 <script>
 (function(){
@@ -1389,186 +1404,61 @@ function buildUrl($params) {
   });
 })();
 
-
-
-
-// ========================================
-// SCRIPT UNIVERSAL PARA MODAL DE ELIMINACIÓN
-// Sin conflictos con otros modales
-// ========================================
-
+<script>
+  //Script para el botón eliminar del modal
 (function() {
   'use strict';
-  
-  console.log('🗑️ Iniciando sistema de eliminación...');
-  
-  // Esperar a que el DOM y Bootstrap estén listos
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  let currentForm = null;
+  let bsDeleteModal = null;
+
+  function getModal() {
+    const el = document.getElementById('deleteModal');
+    if (!el) return null;
+    if (!bsDeleteModal && window.bootstrap?.Modal) {
+      bsDeleteModal = new bootstrap.Modal(el, {backdrop:true, keyboard:true, focus:true});
+    }
+    return { el, inst: bsDeleteModal };
   }
-  
-  function init() {
-    console.log('✅ DOM listo, configurando modal de eliminación');
-    
-    const deleteModal = document.getElementById('deleteModal');
-    const deleteItemName = document.getElementById('deleteItemName');
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    const cancelBtn = deleteModal ? deleteModal.querySelector('.btn-cancel') : null;
-    
-    if (!deleteModal) {
-      console.error('❌ Modal #deleteModal no encontrado');
-      return;
-    }
-    
-    let currentForm = null;
-    let bsDeleteModal = null;
-    
-    // Función para obtener instancia del modal
-    function getModalInstance() {
-      if (!bsDeleteModal && window.bootstrap && bootstrap.Modal) {
-        bsDeleteModal = new bootstrap.Modal(deleteModal, {
-          backdrop: true,
-          keyboard: true,
-          focus: true
-        });
-      }
-      return bsDeleteModal;
-    }
-    
-    // Limpiar backdrops huérfanos
-    function cleanBackdrops() {
-      const backdrops = document.querySelectorAll('.modal-backdrop');
-      backdrops.forEach(backdrop => backdrop.remove());
-      document.body.classList.remove('modal-open');
-      document.body.style.overflow = '';
-      document.body.style.paddingRight = '';
-    }
-    
-    // Interceptar clicks en botones de eliminar
-    document.addEventListener('click', function(e) {
-      const deleteBtn = e.target.closest('.btn-action-delete');
-      
-      if (!deleteBtn) return;
-      
-      console.log('🔴 Click en botón eliminar');
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Limpiar cualquier backdrop previo
+
+  function cleanBackdrops() {
+    document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+  }
+
+  document.body.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-action-delete');
+    if (!btn) return;
+
+    const { el, inst } = getModal() || {};
+    if (!el || !inst) return;
+
+    currentForm = btn.closest('form');
+    if (!currentForm) return;
+
+    const row = btn.closest('tr');
+    const nameEl = row?.querySelector('.item-nombre') || row?.querySelector('td:first-child');
+    const name = nameEl ? nameEl.textContent.trim() : 'este registro';
+    const nameNode = document.getElementById('deleteItemName');
+    if (nameNode) nameNode.textContent = name;
+
+    inst.show();
+  }, true);
+
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('#confirmDeleteBtn');
+    if (!btn) return;
+
+    e.preventDefault();
+    const modal = getModal()?.inst;
+    if (modal) modal.hide();
+
+    setTimeout(function() {
       cleanBackdrops();
-      
-      // Obtener formulario
-      currentForm = deleteBtn.closest('form');
-      
-      if (!currentForm) {
-        console.error('❌ No se encontró el formulario');
-        return;
-      }
-      
-      console.log('✅ Formulario encontrado');
-      
-      // Obtener nombre del item
-      const row = deleteBtn.closest('tr');
-      let itemName = 'este registro';
-      
-      if (row) {
-        // Intentar obtener de diferentes formas
-        const nameEl = row.querySelector('.item-nombre') || 
-                      row.querySelector('td:first-child');
-        
-        if (nameEl) {
-          itemName = nameEl.textContent.trim();
-          console.log('📝 Item:', itemName);
-        }
-      }
-      
-      // Actualizar modal
-      if (deleteItemName) {
-        deleteItemName.textContent = itemName;
-      }
-      
-      // Mostrar modal
-      const modal = getModalInstance();
-      if (modal) {
-        try {
-          modal.show();
-          console.log('✅ Modal mostrado correctamente');
-        } catch (error) {
-          console.error('❌ Error al mostrar modal:', error);
-        }
-      }
-    }, true); // useCapture = true para capturar antes
-    
-    // Confirmar eliminación
-    if (confirmDeleteBtn) {
-      confirmDeleteBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        console.log('✅ Eliminación confirmada');
-        
-        if (!currentForm) {
-          console.error('❌ No hay formulario para enviar');
-          return;
-        }
-        
-        // Cerrar modal
-        const modal = getModalInstance();
-        if (modal) {
-          try {
-            modal.hide();
-          } catch (error) {
-            console.error('Error al cerrar modal:', error);
-          }
-        }
-        
-        // Esperar a que se cierre el modal
-        setTimeout(function() {
-          cleanBackdrops();
-          console.log('📤 Enviando formulario...');
-          currentForm.submit();
-        }, 300);
-      });
-    }
-    
-    // Cancelar eliminación
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', function() {
-        console.log('❌ Eliminación cancelada');
-        currentForm = null;
-        
-        const modal = getModalInstance();
-        if (modal) {
-          try {
-            modal.hide();
-          } catch (error) {
-            console.error('Error al cerrar modal:', error);
-          }
-        }
-        
-        setTimeout(cleanBackdrops, 300);
-      });
-    }
-    
-    // Limpiar al cerrar modal
-    if (deleteModal) {
-      deleteModal.addEventListener('hidden.bs.modal', function() {
-        console.log('🔒 Modal cerrado');
-        currentForm = null;
-        cleanBackdrops();
-      });
-      
-      // Asegurar que se muestre correctamente
-      deleteModal.addEventListener('show.bs.modal', function() {
-        console.log('👁️ Mostrando modal...');
-      });
-      
-      deleteModal.addEventListener('shown.bs.modal', function() {
-        console.log('✅ Modal visible');
-      });
-    }
-    
-    console.log('✅ Sistema de eliminación configurado');
-  }
+      if (currentForm) currentForm.submit();
+      currentForm = null;
+    }, 200);
+  });
 })();
 </script>

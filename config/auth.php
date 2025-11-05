@@ -57,7 +57,8 @@ function auth_require_admin(): void {
   if (!auth_is_admin()) {
     flash_set('ok', 'No tienes permisos para realizar esta acción.');
     // RUTA RELATIVA
-    header('Location: index.php?tab=inv#inv', true, 303);
+    // header('Location: index.php?tab=inv#inv', true, 303);
+    header('Location: ../index.php?tab=inv#inv', true, 303);
     exit;
   }
 }
