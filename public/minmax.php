@@ -8,8 +8,8 @@ $valid = ['reponer','bajo','ok'];
 if (!in_array($estado, $valid, true)) { $estado = ''; }
 
 // Paginación
-$items_por_pagina = isset($_GET['per_page']) && in_array($_GET['per_page'], [10, 25, 50, 100]) ? (int)$_GET['per_page'] : 25;
-$pagina_actual = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$items_por_pagina = isset($_GET['per_page_mm']) && in_array($_GET['per_page_mm'], [10, 25, 50, 100]) ? (int)$_GET['per_page_mm'] : 25;
+$pagina_actual = isset($_GET['page_mm']) ? max(1, (int)$_GET['page_mm']) : 1;
 $offset = ($pagina_actual - 1) * $items_por_pagina;
 
 // Contar total de registros con el filtro aplicado
@@ -452,8 +452,8 @@ function buildUrlMM($params) {
   <!-- Barra de Filtros -->
   <form id="minmax-form" method="get" action="index.php#mm">
     <input type="hidden" name="tab" value="mm">
-    <input type="hidden" name="page" value="1">
-    <input type="hidden" name="per_page" value="<?=$items_por_pagina?>">
+    <input type="hidden" name="page_mm" value="1">
+    <input type="hidden" name="per_page_mm" value="<?=$items_por_pagina?>">
     
     <div class="filter-bar">
       <div class="d-flex gap-3 align-items-center flex-wrap">
@@ -577,13 +577,13 @@ function buildUrlMM($params) {
 
     <div class="pagination-controls">
       <!-- Botón Primera Página -->
-      <a href="<?=buildUrlMM(['estado'=>$estado, 'page'=>1, 'per_page'=>$items_por_pagina])?>" 
+      <a href="<?=buildUrlMM(['estado'=>$estado, 'page_mm'=>1, 'per_page_mm'=>$items_por_pagina])?>" 
          class="pagination-btn arrow <?=$pagina_actual==1?'disabled':''?>">
         <i class="bi bi-chevron-double-left"></i>
       </a>
 
       <!-- Botón Anterior -->
-      <a href="<?=buildUrlMM(['estado'=>$estado, 'page'=>max(1,$pagina_actual-1), 'per_page'=>$items_por_pagina])?>" 
+      <a href="<?=buildUrlMM(['estado'=>$estado, 'page_mm'=>max(1,$pagina_actual-1), 'per_page_mm'=>$items_por_pagina])?>" 
          class="pagination-btn arrow <?=$pagina_actual==1?'disabled':''?>">
         <i class="bi bi-chevron-left"></i>
       </a>
@@ -597,7 +597,7 @@ function buildUrlMM($params) {
       // Mostrar primera página si no está en el rango
       if ($inicio > 1) {
         ?>
-        <a href="<?=buildUrlMM(['estado'=>$estado, 'page'=>1, 'per_page'=>$items_por_pagina])?>" 
+        <a href="<?=buildUrlMM(['estado'=>$estado, 'page_mm'=>1, 'per_page_mm'=>$items_por_pagina])?>" 
            class="pagination-btn">1</a>
         <?php if ($inicio > 2): ?>
           <span class="pagination-ellipsis">...</span>
@@ -606,7 +606,7 @@ function buildUrlMM($params) {
 
       // Páginas en el rango
       for ($i = $inicio; $i <= $fin; $i++): ?>
-        <a href="<?=buildUrlMM(['estado'=>$estado, 'page'=>$i, 'per_page'=>$items_por_pagina])?>" 
+        <a href="<?=buildUrlMM(['estado'=>$estado, 'page_mm'=>$i, 'per_page_mm'=>$items_por_pagina])?>" 
            class="pagination-btn <?=$i==$pagina_actual?'active':''?>"><?=$i?></a>
       <?php endfor;
 
@@ -615,18 +615,18 @@ function buildUrlMM($params) {
         if ($fin < $total_paginas - 1): ?>
           <span class="pagination-ellipsis">...</span>
         <?php endif; ?>
-        <a href="<?=buildUrlMM(['estado'=>$estado, 'page'=>$total_paginas, 'per_page'=>$items_por_pagina])?>" 
+        <a href="<?=buildUrlMM(['estado'=>$estado, 'page_mm'=>$total_paginas, 'per_page_mm'=>$items_por_pagina])?>" 
            class="pagination-btn"><?=$total_paginas?></a>
       <?php } ?>
 
       <!-- Botón Siguiente -->
-      <a href="<?=buildUrlMM(['estado'=>$estado, 'page'=>min($total_paginas,$pagina_actual+1), 'per_page'=>$items_por_pagina])?>" 
+      <a href="<?=buildUrlMM(['estado'=>$estado, 'page_mm'=>min($total_paginas,$pagina_actual+1), 'per_page_mm'=>$items_por_pagina])?>" 
          class="pagination-btn arrow <?=$pagina_actual==$total_paginas?'disabled':''?>">
         <i class="bi bi-chevron-right"></i>
       </a>
 
       <!-- Botón Última Página -->
-      <a href="<?=buildUrlMM(['estado'=>$estado, 'page'=>$total_paginas, 'per_page'=>$items_por_pagina])?>" 
+      <a href="<?=buildUrlMM(['estado'=>$estado, 'page_mm'=>$total_paginas, 'per_page_mm'=>$items_por_pagina])?>" 
          class="pagination-btn arrow <?=$pagina_actual==$total_paginas?'disabled':''?>">
         <i class="bi bi-chevron-double-right"></i>
       </a>
@@ -637,20 +637,26 @@ function buildUrlMM($params) {
 
 <script>
 (function(){
-  const form = document.getElementById('minmax-form');
-  const sel  = form.querySelector('select[name="estado"]');
-  const perPageInput = form.querySelector('input[name="per_page"]');
-  const perPageSelect = document.getElementById('perPageSelect');
-  
-  // Auto-submit al cambiar filtro
-  sel.addEventListener('change', function(){ form.submit(); });
-  
-  // Cambio de items por página
+  // 👇 Scope: solo dentro de la pestaña Min/Máx
+  const root = document.getElementById('mm');
+  if (!root) return;
+
+  const form = root.querySelector('#minmax-form');
+  if (!form) return;
+
+  const sel            = form.querySelector('select[name="estado"]');
+  const perPageInput = form.querySelector('input[name="per_page_mm"]');
+  const perPageSelect  = root.querySelector('#perPageSelect'); // 👈 ya no usamos document.getElementById
+
+  // Auto-submit al cambiar filtro de estado
+  if (sel) {
+    sel.addEventListener('change', function(){ form.submit(); });
+  }
+
+  // Cambio de "Por página"
   if (perPageSelect) {
     perPageSelect.addEventListener('change', function(){
-      if (perPageInput) {
-        perPageInput.value = this.value;
-      }
+      if (perPageInput) perPageInput.value = this.value;
       form.submit();
     });
   }

@@ -750,20 +750,22 @@ $flash_ok = flash_get('ok') ?? null;
   }
 
   // Click en tabs
-  links.forEach(a => {
-    a.addEventListener('click', (ev) => {
-      ev.preventDefault();
-      let tab = a.getAttribute('href').slice(1);
-      tab = safeTab(tab);
-      activate(tab);
-      
-      // Mantener ?tab= y #hash en URL
-      const url = new URL(location.href);
-      url.searchParams.set('tab', tab);
-      url.hash = tab;
-      history.replaceState({}, '', url);
-    });
+links.forEach(a => {
+  a.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    let tab = a.getAttribute('href').slice(1);
+    tab = safeTab(tab);
+    activate(tab);
+
+    // ❗ Limpiar la query para no arrastrar filtros de otras pestañas, especificamente de la paginación de inventario a min/max
+    const url = new URL(location.href);
+    url.search = '';                 // <- limpia todos los parámetros
+    url.searchParams.set('tab', tab);
+    url.hash = tab;
+    history.replaceState({}, '', url);
   });
+});
+
 
   // Activación inicial por ?tab= o #hash (default inv)
   const params = new URLSearchParams(location.search);

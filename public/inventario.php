@@ -9,8 +9,8 @@ $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 $clase_id = (isset($_GET['clase_id']) && $_GET['clase_id'] !== '') ? (int)$_GET['clase_id'] : null;
 
 // Paginación
-$items_por_pagina = isset($_GET['per_page']) && in_array($_GET['per_page'], [10, 25, 50, 100]) ? (int)$_GET['per_page'] : 25;
-$pagina_actual = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$items_por_pagina = isset($_GET['per_page_inv']) && in_array($_GET['per_page_inv'], [10, 25, 50, 100]) ? (int)$_GET['per_page_inv'] : 25;
+$pagina_actual = isset($_GET['page_inv']) ? max(1, (int)$_GET['page_inv']) : 1;
 $offset = ($pagina_actual - 1) * $items_por_pagina;
 
 // Contar total de registros
@@ -833,8 +833,8 @@ function buildUrl($params) {
 <div class="inventario-wrapper">
   <form id="inventario-form" class="row gy-3 gx-3 align-items-end" method="get" action="index.php#inv">
     <input type="hidden" name="tab" value="inv">
-    <input type="hidden" name="page" value="1">
-    <input type="hidden" name="per_page" value="<?=$items_por_pagina?>">
+    <input type="hidden" name="page_inv" value="1">
+    <input type="hidden" name="per_page_inv" value="<?=$items_por_pagina?>">
     
     <div class="col-md-5">
       <div class="input-group">
@@ -1035,13 +1035,13 @@ function buildUrl($params) {
 
     <div class="pagination-controls">
       <!-- Botón Primera Página -->
-      <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page'=>1, 'per_page'=>$items_por_pagina])?>" 
+      <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>1, 'per_page_inv'=>$items_por_pagina])?>" 
          class="pagination-btn arrow <?=$pagina_actual==1?'disabled':''?>">
         <i class="bi bi-chevron-double-left"></i>
       </a>
 
       <!-- Botón Anterior -->
-      <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page'=>max(1,$pagina_actual-1), 'per_page'=>$items_por_pagina])?>" 
+      <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>max(1,$pagina_actual-1), 'per_page_inv'=>$items_por_pagina])?>" 
          class="pagination-btn arrow <?=$pagina_actual==1?'disabled':''?>">
         <i class="bi bi-chevron-left"></i>
       </a>
@@ -1055,7 +1055,7 @@ function buildUrl($params) {
       // Mostrar primera página si no está en el rango
       if ($inicio > 1) {
         ?>
-        <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page'=>1, 'per_page'=>$items_por_pagina])?>" 
+        <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>1, 'per_page_inv'=>$items_por_pagina])?>" 
            class="pagination-btn">1</a>
         <?php if ($inicio > 2): ?>
           <span class="pagination-ellipsis">...</span>
@@ -1064,7 +1064,7 @@ function buildUrl($params) {
 
       // Páginas en el rango
       for ($i = $inicio; $i <= $fin; $i++): ?>
-        <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page'=>$i, 'per_page'=>$items_por_pagina])?>" 
+        <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>$i, 'per_page_inv'=>$items_por_pagina])?>" 
            class="pagination-btn <?=$i==$pagina_actual?'active':''?>"><?=$i?></a>
       <?php endfor;
 
@@ -1073,18 +1073,18 @@ function buildUrl($params) {
         if ($fin < $total_paginas - 1): ?>
           <span class="pagination-ellipsis">...</span>
         <?php endif; ?>
-        <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page'=>$total_paginas, 'per_page'=>$items_por_pagina])?>" 
+        <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>$total_paginas, 'per_page_inv'=>$items_por_pagina])?>" 
            class="pagination-btn"><?=$total_paginas?></a>
       <?php } ?>
 
       <!-- Botón Siguiente -->
-      <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page'=>min($total_paginas,$pagina_actual+1), 'per_page'=>$items_por_pagina])?>" 
+      <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>min($total_paginas,$pagina_actual+1), 'per_page_inv'=>$items_por_pagina])?>" 
          class="pagination-btn arrow <?=$pagina_actual==$total_paginas?'disabled':''?>">
         <i class="bi bi-chevron-right"></i>
       </a>
 
       <!-- Botón Última Página -->
-      <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page'=>$total_paginas, 'per_page'=>$items_por_pagina])?>" 
+      <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>$total_paginas, 'per_page_inv'=>$items_por_pagina])?>" 
          class="pagination-btn arrow <?=$pagina_actual==$total_paginas?'disabled':''?>">
         <i class="bi bi-chevron-double-right"></i>
       </a>
@@ -1111,17 +1111,18 @@ function buildUrl($params) {
 </div>
 
        
-
-
-
-
 <script>
 (function(){
-  const form   = document.getElementById('inventario-form');
-  const q      = form.querySelector('input[name="q"]');
-  const clase  = form.querySelector('select[name="clase_id"]');
-  const perPageInput = form.querySelector('input[name="per_page"]');
-  const perPageSelect = document.getElementById('perPageSelect');
+  
+  const root = document.getElementById('inv');
+  if (!root) return;
+
+  const form = root.querySelector('#inventario-form');
+  const q    = form?.querySelector('input[name="q"]');
+  const clase = form?.querySelector('select[name="clase_id"]');
+  const perPageInput  = form.querySelector('input[name="per_page_inv"]');
+  const perPageSelect = root.querySelector('#perPageSelect');
+
   let t;
 
   q.addEventListener('input', function(){
