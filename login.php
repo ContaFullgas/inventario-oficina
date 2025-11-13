@@ -241,7 +241,7 @@ body {
 
       <div class="text-center mt-3">
         <small class="text-muted">
-          Demo: <code>admin/admin123</code> · <code>consulta/consulta123</code>
+          <!-- Demo: <code>admin/admin123</code> · <code>consulta/consulta123</code>-->
         </small>
       </div>
     </div>

@@ -428,8 +428,6 @@ $flash_ok = flash_get('ok') ?? null;
 .footer-contact-item {
   display: flex;
   flex-direction: row;
-  align-items: center;
-  justify-content: center;
   gap: 0.75rem;
 }
 

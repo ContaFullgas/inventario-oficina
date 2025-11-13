@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 // Ajusta tus credenciales
 $DB_HOST = '127.0.0.1'; // cambia si usas otro host
-$DB_PORT = '3307';      // cambia si usas otro puerto (WAMP 3308, MAMP 8889, etc.)
+$DB_PORT = '3306';      // cambia si usas otro puerto (WAMP 3308, MAMP 8889, etc.)
 $DB_NAME = 'oficina_inv';
 $DB_USER = 'root';
 $DB_PASS = '';

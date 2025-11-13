@@ -469,6 +469,7 @@ function buildUrlMM($params) {
         <a class="btn btn-success btn-clean" href="index.php?tab=mm#mm">
           <i class="bi bi-arrow-clockwise"></i> Limpiar
         </a>
+        <button class="btn btn-danger"><i class="bi bi-file-earmark-arrow-down-fill"></i> Generar Requerimiento</button>
       </div>
     </div>
   </form>
