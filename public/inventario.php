@@ -863,9 +863,16 @@ function buildUrl($params) {
       </div>
     </div>
     
-    <div class="col-md-2">
+     <div class="col-md-2">
       <a class="btn btn-success w-100" href="index.php?tab=inv#inv">
         <i class="bi bi-arrow-clockwise"></i> Limpiar
+      </a>
+    </div>
+
+    <div class="col-md-3">
+      <a class="btn btn-danger w-100"
+         href="public/inventario_pdf.php?q=<?=urlencode($q)?><?= !is_null($clase_id) ? '&clase_id='.$clase_id : '' ?>">
+        <i class="bi bi-filetype-pdf"></i> Descargar PDF
       </a>
     </div>
   </form>
