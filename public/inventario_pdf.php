@@ -45,9 +45,7 @@ if (!$fpdf_loaded) {
     exit;
 }
 
-// Parámetros de paginación
-$page = max(1, (int)($_GET['page'] ?? 1));
-$per  = max(1, min(500, (int)($_GET['per_page'] ?? $_GET['per'] ?? 100)));
+
 
 // Filtros opcionales
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
@@ -109,8 +107,12 @@ try {
     $totalItems = 0;
 }
 
-$totalPages = max(1, ceil($totalItems / $per));
-$offset = ($page - 1) * $per;
+
+// ---- FORZAR PDF GIGANTE ----
+$page = 1;
+$per = $totalItems;   // ahora sí existe
+$totalPages = 1;
+$offset = 0;
 
 // -----------------------------
 // 3) Query paginada para los items de esta página
@@ -133,14 +135,14 @@ if (!is_null($clase_id)) {
     $sql .= " AND i.clase_id = :cid";
     $params[':cid'] = $clase_id;
 }
-$sql .= " ORDER BY i.nombre LIMIT :lim OFFSET :off";
+$sql .= " ORDER BY i.nombre";
 
 try {
     $stmt = $pdo->prepare($sql);
     if ($q !== '') $stmt->bindValue(':q', "%$q%");
     if (!is_null($clase_id)) $stmt->bindValue(':cid', $clase_id, PDO::PARAM_INT);
-    $stmt->bindValue(':lim', $per, PDO::PARAM_INT);
-    $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
+    // $stmt->bindValue(':lim', $per, PDO::PARAM_INT);
+    // $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
     $stmt->execute();
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
