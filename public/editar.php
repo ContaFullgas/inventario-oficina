@@ -476,6 +476,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
+
+    /* Normalizar altura de inputs en formularios */
+    #inventario-form .input-group > .form-control,
+    #inventario-form .input-group > .form-select,
+    #inventario-form .input-group > .input-group-text {
+      height: 44px;
+    }
+
+    #inventario-form .input-group {
+      align-items: center;
+    }
+
   </style>
 </head>
 <body>
@@ -509,6 +521,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!--Grupo 1 dos inputs -->
         <div class="col-md-6">
+          <label class="form-label fw-semibold">
+            Nombre del producto
+          </label>
           <div class="input-group">
             <label class="input-group-text text-white"><i class="bi bi-clipboard2-fill"></i></label>
             <input type="text" name="nombre" class="form-control" placeholder="Nombre del articulo/Producto *" required value="<?=h($item['nombre'])?>">
@@ -516,6 +531,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="col-md-6">
+          <label class="form-label fw-semibold">
+            Clase
+          </label>
           <div class="input-group">
             <label class="input-group-text text-white"><i class="bi bi-tag-fill"></i></label>
             <select name="clase_id" class="form-select">
@@ -530,6 +548,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!--Grupo 2 3 inputs de stock -->
         <div class="col-md-4">
+          <label class="form-label fw-semibold">
+            Stock
+          </label>
           <div class="input-group">
             <label  class="input-group-text text-white"><i class="bi bi-layers-fill"></i></label>
             <input type="number" name="cantidad" class="form-control" min="0" value="<?=intval($item['cantidad'])?>">
@@ -538,6 +559,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="col-md-4">
+          <label class="form-label fw-semibold">
+            Min
+          </label>
           <div class="input-group">
             <label  class="input-group-text text-white"><i class="bi bi-arrow-down-circle-fill"></i></label>
             <input type="number" name="min_stock" class="form-control" min="0" value="<?=intval($item['min_stock'])?>">
@@ -545,6 +569,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="col-md-4">
+          <label class="form-label fw-semibold">
+            Max
+          </label>
           <div class="input-group">
             <label  class="input-group-text text-white"><i class="bi bi-arrow-up-circle-fill"></i></label>
             <input type="number" name="max_stock" class="form-control" min="0" value="<?=intval($item['max_stock'])?>">
@@ -553,6 +580,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!--Grupo 3 3 inputs -->
         <div class="col-md-4">
+          <label class="form-label fw-semibold">
+            Condicion
+          </label>
           <div class="input-group">
             <label class="input-group-text text-white"><i class="bi bi-check-circle-fill"></i></label>
             <select name="condicion_id" class="form-select">
@@ -566,6 +596,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="col-md-4">
+          <label class="form-label fw-semibold">
+            Ubicación
+          </label>
           <div class="input-group">
             <label class="input-group-text text-white"><i class="bi bi-geo-alt-fill"></i></label>
             <select name="ubicacion_id" class="form-select">
@@ -579,6 +612,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="col-md-4">
+          <label class="form-label fw-semibold">
+            Imagen
+          </label>
           <div class="input-group">
             <label class="input-group-text text-white"><i class="bi bi-image-fill"></i></label>
             <input type="file" name="imagen" class="form-control" accept="image/*">
