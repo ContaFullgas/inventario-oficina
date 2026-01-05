@@ -1,5 +1,5 @@
 <?php
-// inventario_pdf_split_thumbs_final.php
+//Archivo inventario_pdf.php
 // Versión final lista para pegar:
 // - paginado ?page=1&per=100
 // - thumbnails al vuelo (prioriza GD), temporales limpiados

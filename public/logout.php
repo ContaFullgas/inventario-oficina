@@ -1,4 +1,7 @@
 <?php
+
+//Archivo logout.php
+
 require_once __DIR__.'/../config/auth.php';
 auth_logout();
 // flash_set('ok', 'Sesión cerrada.');

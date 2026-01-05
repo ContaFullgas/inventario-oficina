@@ -1,4 +1,7 @@
 <?php
+
+//Archivo login.php
+
 require_once __DIR__.'/config/auth.php';
 
 $err = null;

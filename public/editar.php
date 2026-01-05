@@ -1,4 +1,7 @@
 <?php
+
+//Archivo editar.php
+
 ob_start();
 require_once __DIR__.'/../config/db.php';
 require_once __DIR__.'/../config/util.php';

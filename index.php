@@ -1,4 +1,7 @@
 <?php
+
+//Archivo index.php
+
 require_once __DIR__.'/config/auth.php';
 auth_check(); // obliga a iniciar sesión ?>
 
