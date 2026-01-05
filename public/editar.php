@@ -504,6 +504,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <form enctype="multipart/form-data" class="row g-3" id="inventario-form">
       <input type="hidden" name="id" value="<?= intval($id) ?>">
       <?= csrf_field() ?>
+      <input type="hidden" name="return_url"
+        value="<?= h($_SERVER['HTTP_REFERER'] ?? '../index.php?tab=inv#inv') ?>">
 
         <!--Grupo 1 dos inputs -->
         <div class="col-md-6">
@@ -602,8 +604,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="col-12 text-center">
-          <button class="btn btn-primary"><i class="bi bi-floppy2-fill"></i> Guardar cambios</button>
-          <a class="btn btn-secondary" href="../index.php?tab=inv#inv"><i class="bi bi-x-lg"></i> Cancelar</a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-floppy2-fill"></i> Guardar cambios
+          </button>
+
+          <button type="button" class="btn btn-secondary" id="btn-cancelar">
+            <i class="bi bi-x-lg"></i> Cancelar
+          </button>
         </div>
       </form>
     </div>
@@ -623,13 +630,24 @@ document.getElementById('inventario-form').addEventListener('submit', function(e
   .then(r => r.json())
   .then(res => {
     if (res.ok) {
-      alert(res.message);
-      history.back();
+      // alert(res.message);
+
+      const returnUrl = document.querySelector('[name="return_url"]').value;
+      window.location.href = returnUrl;
     } else {
       alert(res.errors.join('\n'));
     }
   });
+
+
 });
+
+document.getElementById('btn-cancelar').addEventListener('click', function () {
+  const returnUrl = document.querySelector('[name="return_url"]').value;
+  window.location.href = returnUrl;
+});
+
+
 </script>
 
 
