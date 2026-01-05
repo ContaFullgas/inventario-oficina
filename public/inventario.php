@@ -999,11 +999,13 @@ function buildUrl($params) {
             <?php if ($is_admin): ?>
             <td>
               <div class="btn-action-group">
-                <a class="btn-action btn-action-edit" 
-                   href="public/editar.php?id=<?=intval($it['id'])?>" 
-                   title="Editar">
+                <a class="btn-action btn-action-edit"
+                  href="public/editar.php?id=<?=intval($it['id'])?>"
+                  data-save-scroll
+                  title="Editar">
                   <i class="bi bi-pencil-square"></i>
                 </a>
+
 
               <form action="public/eliminar.php" method="post" class="d-inline">
                 <?= csrf_field() ?>
@@ -1120,7 +1122,36 @@ function buildUrl($params) {
   </div>
 </div>
 
-       
+<script>
+/* Restaurar scroll sin efecto visual (archivo incluido) */
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
+const __invScroll = sessionStorage.getItem('inv_scroll');
+
+if (__invScroll !== null) {
+  sessionStorage.removeItem('inv_scroll');
+
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+
+  window.scrollTo(0, parseInt(__invScroll, 10));
+}
+
+</script>
+
+<script>
+/* Guarda la posición del scroll al salir a editar */
+document.addEventListener('click', function (e) {
+  const link = e.target.closest('a[data-save-scroll]');
+  if (!link) return;
+  sessionStorage.setItem('inv_scroll', window.scrollY);
+});
+
+</script>
+
 <script>
 (function(){
   
@@ -1235,11 +1266,25 @@ function buildUrl($params) {
     if (rscale > 1) zoomBox.classList.add('can-pan'); else zoomBox.classList.remove('can-pan');
   }
 
+  let needsDraw = false;
+
+  function safeDraw() {
+    if (needsDraw) return;
+    needsDraw = true;
+
+    requestAnimationFrame(() => {
+      draw();
+      needsDraw = false;
+    });
+  }
+
+
+
   function resetView(toScale=1){
     scale = toScale; tx = 0; ty = 0;
     resizeCanvas();
     computeBaseSize();
-    draw();
+    safeDraw();
   }
 
   function openImgModal(imgFile){
@@ -1299,7 +1344,7 @@ function buildUrl($params) {
     ty = ty - pcy * (k - 1);
     scale = newScale;
     clamp();
-    draw();
+    safeDraw();
   }, { passive:false });
 
   zoomBox.addEventListener('mousedown', (e) => {
@@ -1322,7 +1367,7 @@ function buildUrl($params) {
     lx = e.clientX; ly = e.clientY;
     tx += dx; ty += dy;
     clamp();
-    draw();
+    safeDraw();
   });
 
   ['mouseup','mouseleave'].forEach(ev => {
@@ -1343,7 +1388,7 @@ function buildUrl($params) {
     ty = ty - pcy * (k - 1);
     scale = target;
     clamp();
-    draw();
+    safeDraw();
   });
 
   document.querySelectorAll('.img-thumb[data-img]').forEach(el => {
@@ -1353,22 +1398,14 @@ function buildUrl($params) {
     });
   });
 
-  document.querySelectorAll('#tabla-inventario tbody tr').forEach(tr => {
-    const imgFile = tr.getAttribute('data-img');
-    if (!imgFile) return;
-    tr.addEventListener('click', (e) => {
-      if (e.target.closest('.no-modal')) return;
-      if (e.target.closest('a,button,form,input,select,label')) return;
-      openImgModal(imgFile);
-    });
-    const nombreEl = tr.querySelector('.nombre');
-    if (nombreEl) {
-      nombreEl.addEventListener('click', (e) => {
-        e.preventDefault(); e.stopPropagation();
-        openImgModal(imgFile);
-      });
-    }
+  document.getElementById('tabla-inventario')?.addEventListener('click', function (e) {
+    const tr = e.target.closest('tr[data-img]');
+    if (!tr) return;
+    if (e.target.closest('a,button,form,input,select,label')) return;
+
+    openImgModal(tr.getAttribute('data-img'));
   });
+
 })();
 
 </script>
