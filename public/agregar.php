@@ -45,12 +45,45 @@ $ubis   = $pdo->query("SELECT id, nombre FROM cat_ubicaciones ORDER BY nombre")-
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(39,174,96,0.4);
 }
+
+/* ==============================
+   Normalizar alturas del formulario AGREGAR
+   ============================== */
+
+/* Altura uniforme para inputs, selects y addons */
+#inventario-form2 .input-group > .form-control,
+#inventario-form2 .input-group > .form-select,
+#inventario-form2 .input-group > .input-group-text {
+  height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+/* Alinear verticalmente el contenido del input-group */
+#inventario-form2 .input-group {
+  align-items: center;
+}
+
+/* Labels más compactos */
+#inventario-form2 .form-label {
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+}
+
+/* Reducir espacio vertical entre filas */
+#inventario-form2 {
+  row-gap: 0.75rem;
+}
+
 </style>
 <form id="inventario-form2" method="post" enctype="multipart/form-data" class="row g-3" action="public/agregar_guardar.php">
   <?=csrf_field()?>
 
   <!-- Grupo 1: Nombre y Clase (2 inputs) -->
   <div class="col-md-6">
+    <label class="form-label fw-semibold">
+      Nombre del producto
+    </label>
     <div class="input-group" >
       <label class="input-group-text text-white" style="background-color: #F59E0B;"><i class="bi bi-clipboard2-fill"></i></label>
       <input type="text" name="nombre" class="form-control" placeholder="Nombre del articulo/Producto" required>
@@ -58,6 +91,9 @@ $ubis   = $pdo->query("SELECT id, nombre FROM cat_ubicaciones ORDER BY nombre")-
   </div>
 
   <div class="col-md-6">
+    <label class="form-label fw-semibold">
+      Clase
+    </label>
     <div class="input-group">
       <label class="input-group-text text-white" style="background-color: #F59E0B;"><i class="bi bi-tag-fill"></i></label>
       <select name="clase_id" class="form-select">
@@ -72,6 +108,9 @@ $ubis   = $pdo->query("SELECT id, nombre FROM cat_ubicaciones ORDER BY nombre")-
 
   <!-- Grupo 2: Cantidad, Min Stock y Max Stock (3 inputs) -->
   <div class="col-md-4">
+    <label class="form-label fw-semibold">
+      Stock
+    </label>
     <div class="input-group">
       <label class="input-group-text text-white" style="background-color: #F59E0B;"><i class="bi bi-layers-fill"></i></label>
       <input type="number" name="cantidad" class="form-control" value="0" min="0" placeholder="Stock">
@@ -79,6 +118,9 @@ $ubis   = $pdo->query("SELECT id, nombre FROM cat_ubicaciones ORDER BY nombre")-
   </div>
   
   <div class="col-md-4">
+    <label class="form-label fw-semibold">
+      Min
+    </label>
     <div class="input-group">
       <label class="input-group-text text-white" style="background-color: #F59E0B;"><i class="bi bi-arrow-down-circle-fill"></i></label>
       <input type="number" name="min_stock" class="form-control" value="0" min="0" placeholder="Cantidad Minima">
@@ -86,6 +128,9 @@ $ubis   = $pdo->query("SELECT id, nombre FROM cat_ubicaciones ORDER BY nombre")-
   </div>
 
   <div class="col-md-4">
+    <label class="form-label fw-semibold">
+      Max
+    </label>
     <div class="input-group">
       <label class="input-group-text text-white" style="background-color: #F59E0B;"><i class="bi bi-arrow-up-circle-fill"></i></label>
       <input type="number" name="max_stock" class="form-control" value="0" min="0" placeholder="Cantidad Maxima">
@@ -94,6 +139,9 @@ $ubis   = $pdo->query("SELECT id, nombre FROM cat_ubicaciones ORDER BY nombre")-
 
   <!-- Grupo 3: Condición, Ubicación e Imagen (3 inputs) -->
   <div class="col-md-4">
+    <label class="form-label fw-semibold">
+      Condicion
+    </label>
     <div class="input-group">
       <label class="input-group-text text-white" style="background-color: #F59E0B;"><i class="bi bi-check-circle-fill"></i></label>
       <select name="condicion_id" class="form-select">
@@ -107,6 +155,9 @@ $ubis   = $pdo->query("SELECT id, nombre FROM cat_ubicaciones ORDER BY nombre")-
   </div>
 
   <div class="col-md-4">
+    <label class="form-label fw-semibold">
+      Ubicación
+    </label>
     <div class="input-group">
       <label class="input-group-text text-white" style="background-color: #F59E0B;"><i class="bi bi-geo-alt-fill"></i></label>
       <select name="ubicacion_id" class="form-select">
@@ -120,6 +171,9 @@ $ubis   = $pdo->query("SELECT id, nombre FROM cat_ubicaciones ORDER BY nombre")-
   </div>
 
   <div class="col-md-4">
+    <label class="form-label fw-semibold">
+      Imagen
+    </label>
     <div class="input-group">
       <label class="input-group-text text-white" style="background-color: #F59E0B;"><i class="bi bi-image-fill"></i></label>
       <input type="file" name="imagen" class="form-control" accept="image/*">
