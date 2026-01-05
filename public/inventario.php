@@ -849,6 +849,13 @@ function buildUrl($params) {
                value="<?=h($q)?>">
       </div>
     </div>
+
+    <!-- 👉 AQUÍ VA EL BOTÓN -->
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100">
+        <i class="bi bi-search"></i> Buscar
+      </button>
+    </div>
     
     <div class="col-md-5">
       <div class="input-group">
@@ -1166,10 +1173,10 @@ document.addEventListener('click', function (e) {
 
   let t;
 
-  q.addEventListener('input', function(){
-    clearTimeout(t);
-    t = setTimeout(function(){ form.submit(); }, 400);
-  });
+  // q.addEventListener('input', function(){
+  //   clearTimeout(t);
+  //   t = setTimeout(function(){ form.submit(); }, 400);
+  // });
 
   clase.addEventListener('change', function(){ form.submit(); });
 
