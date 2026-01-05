@@ -501,8 +501,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="alert alert-danger"><ul class="mb-0"><?php foreach($errors as $e): ?><li><?=h($e)?></li><?php endforeach; ?></ul></div>
       <?php endif; ?>
         <!--Aquí va el Form -->
-      <form method="post" enctype="multipart/form-data" class="row g-3" id="inventario-form" action="editar.php?id=<?=intval($id)?>">
-        <?=csrf_field()?>
+      <form enctype="multipart/form-data" class="row g-3" id="inventario-form">
+      <input type="hidden" name="id" value="<?= intval($id) ?>">
+      <?= csrf_field() ?>
 
         <!--Grupo 1 dos inputs -->
         <div class="col-md-6">
@@ -608,5 +609,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
 </div>
+
+<script>
+document.getElementById('inventario-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const data = new FormData(this);
+
+  fetch('ajax/editar_item.php', {
+    method: 'POST',
+    body: data
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.ok) {
+      alert(res.message);
+      history.back();
+    } else {
+      alert(res.errors.join('\n'));
+    }
+  });
+});
+</script>
+
+
 </body>
 </html>
+
