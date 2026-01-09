@@ -897,7 +897,9 @@ links.forEach(a => {
         
         setTimeout(function() {
           cleanBackdrops();
-          currentForm.submit();
+          // currentForm.submit();
+          // llamada a metodo ajax para eliminar en lugar de post
+          ajaxDelete(currentForm);
         }, 300);
       });
     }
@@ -954,6 +956,75 @@ links.forEach(a => {
     subtree: true
   });
   
+  //Funcion ajax para eliminar articulos sin recargar la pagina y perder los filtros
+  async function ajaxDelete(form) {
+  const url = form.getAttribute('action');
+  const formData = new FormData(form);
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+
+    const text = await response.text();
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('Respuesta no JSON:', text);
+      alert('Sesión expirada o error de permisos');
+      return;
+    }
+
+    if (!data.ok) {
+      alert(data.message || 'Error al eliminar');
+      return;
+    }
+
+    // 🔥 Quitar fila
+    const row = form.closest('tr');
+    if (row) {
+      row.style.transition = 'all 0.3s ease';
+      row.style.opacity = '0';
+      row.style.transform = 'scale(0.95)';
+      setTimeout(() => row.remove(), 300);
+    }
+
+    showFlash('Registro eliminado correctamente');
+
+  } catch (error) {
+    console.error(error);
+    alert('Error de comunicación con el servidor');
+  }
+}
+
+
+function showFlash(message) {
+  const container = document.querySelector('.main-container');
+  if (!container) return;
+
+  const div = document.createElement('div');
+  div.className = 'flash-message';
+  div.innerHTML = `
+    <i class="fas fa-check-circle"></i>
+    <span class="flash-text">${message}</span>
+    <button class="btn-close-custom"><i class="fas fa-times"></i></button>
+  `;
+
+  container.prepend(div);
+
+  div.querySelector('.btn-close-custom')
+    .addEventListener('click', () => div.remove());
+
+  setTimeout(() => div.remove(), 4000);
+}
+
+
 })();
 </script>
 

@@ -1014,10 +1014,10 @@ function buildUrl($params) {
                 </a>
 
 
-              <form action="public/eliminar.php" method="post" class="d-inline">
+              <form action="public/ajax/eliminar_item.php" method="post" class="d-inline delete-form">
                 <?= csrf_field() ?>
                 <input type="hidden" name="id" value="<?= intval($it['id']) ?>">
-                <button type="button" class="btn-action btn-action-delete" title="Eliminar">
+                <button type="button" class="btn-action btn-action-delete">
                   <i class="bi bi-trash-fill"></i>
                 </button>
               </form>
