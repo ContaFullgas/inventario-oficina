@@ -496,7 +496,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <nav class="modern-navbar">
   <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center">
-      <a href="../index.php?tab=inv#inv" class="navbar-brand-custom">
+      <a href="#" class="navbar-brand-custom" id="btn-volver">
         <div class="brand-icon">
           <i class="bi bi-backspace-fill"></i>
         </div>
@@ -678,7 +678,15 @@ document.getElementById('inventario-form').addEventListener('submit', function(e
 
 });
 
+//Funcion ajax botón editar
 document.getElementById('btn-cancelar').addEventListener('click', function () {
+  const returnUrl = document.querySelector('[name="return_url"]').value;
+  window.location.href = returnUrl;
+});
+
+//Funcion ajax boton eliminar
+document.getElementById('btn-volver').addEventListener('click', function (e) {
+  e.preventDefault(); // evita el href="#"
   const returnUrl = document.querySelector('[name="return_url"]').value;
   window.location.href = returnUrl;
 });
