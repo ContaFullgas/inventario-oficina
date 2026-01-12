@@ -530,14 +530,15 @@ $flash_ok = flash_get('ok') ?? null;
   
   <!-- FLASH MESSAGES -->
   <?php if ($flash_ok): ?>
-    <div class="flash-message" role="alert">
+    <div class="flash-message auto-dismiss" role="alert">
       <i class="fas fa-check-circle"></i>
-      <span class="flash-text"><?=htmlspecialchars($flash_ok, ENT_QUOTES, 'UTF-8')?></span>
-      <button type="button" class="btn-close-custom" onclick="this.parentElement.remove()">
+      <span class="flash-text"><?= htmlspecialchars($flash_ok, ENT_QUOTES, 'UTF-8') ?></span>
+      <button type="button" class="btn-close-custom">
         <i class="fas fa-times"></i>
       </button>
     </div>
   <?php endif; ?>
+
 
   <!-- INVENTORY CARD -->
   <div class="inventory-card">
@@ -1027,6 +1028,15 @@ function showFlash(message) {
 
 })();
 </script>
+
+
+<script>
+//Para flashes PHP y las pestañas se cierren automaticamente
+document.querySelectorAll('.flash-message').forEach(flash => {
+  setTimeout(() => flash.remove(), 4000);
+});
+</script>
+
 
 </body>
 </html>
