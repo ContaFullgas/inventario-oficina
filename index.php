@@ -1005,6 +1005,35 @@ links.forEach(a => {
 }
 
 
+// function showFlash(message) {
+//   const container = document.querySelector('.main-container');
+//   if (!container) return;
+
+//   const div = document.createElement('div');
+//   div.className = 'flash-message';
+//   div.innerHTML = `
+//     <i class="fas fa-check-circle"></i>
+//     <span class="flash-text">${message}</span>
+//     <button class="btn-close-custom"><i class="fas fa-times"></i></button>
+//   `;
+
+//   container.prepend(div);
+
+//   div.querySelector('.btn-close-custom')
+//     .addEventListener('click', () => div.remove());
+
+//   setTimeout(() => div.remove(), 4000);
+// }
+
+
+})();
+</script>
+
+<script>
+// ============================================
+// Función global para mostrar mensajes flash
+// Usada por AJAX (eliminar, editar, etc.)
+// ============================================
 function showFlash(message) {
   const container = document.querySelector('.main-container');
   if (!container) return;
@@ -1024,9 +1053,6 @@ function showFlash(message) {
 
   setTimeout(() => div.remove(), 4000);
 }
-
-
-})();
 </script>
 
 
@@ -1034,6 +1060,19 @@ function showFlash(message) {
 //Para flashes PHP y las pestañas se cierren automaticamente
 document.querySelectorAll('.flash-message').forEach(flash => {
   setTimeout(() => flash.remove(), 4000);
+});
+</script>
+
+<script>
+// Permite mostrar notificaciones tipo "flash"
+// después de operaciones AJAX (editar, etc.)
+// usando sessionStorage al redirigir.
+document.addEventListener('DOMContentLoaded', () => {
+  const msg = sessionStorage.getItem('flash_ok');
+  if (msg) {
+    showFlash(msg);
+    sessionStorage.removeItem('flash_ok');
+  }
 });
 </script>
 

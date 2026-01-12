@@ -666,11 +666,14 @@ document.getElementById('inventario-form').addEventListener('submit', function(e
   .then(r => r.json())
   .then(res => {
     if (res.ok) {
-      // alert(res.message);
+      // Mostrar notificación ANTES de volver
+      sessionStorage.setItem('flash_ok', res.message);
 
       const returnUrl = document.querySelector('[name="return_url"]').value;
       window.location.href = returnUrl;
-    } else {
+    }
+
+    else {
       alert(res.errors.join('\n'));
     }
   });
