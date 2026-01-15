@@ -14,7 +14,7 @@ header('Pragma: no-cache');
 
 // Determinar pestaña activa desde la URL (?tab=...)
 $tab = $_GET['tab'] ?? '';
-$tabs = ['inv','mm','gal','add','cclase','ccond','cubi'];
+$tabs = ['inv','mm','hist','gal','add','cclase','ccond','cubi'];
 if (!in_array($tab, $tabs, true)) { $tab = 'inv'; }
 
 // ===== Permisos (admin / consulta) =====
@@ -549,7 +549,12 @@ $flash_ok = flash_get('ok') ?? null;
         <i class="fas fa-boxes"></i>
         <span>Inventario</span>
       </a>
-      
+
+      <a class="tab-link <?= $tab==='hist'?'active':'' ?>" href="#hist" role="tab">
+        <i class="fas fa-clock"></i>
+        <span>Historial</span>
+      </a>
+
       <a class="tab-link <?= $tab==='mm'?'active':'' ?>" href="#mm" role="tab">
         <i class="fas fa-chart-line"></i>
         <span>Mín/Máx</span>
@@ -582,6 +587,10 @@ $flash_ok = flash_get('ok') ?? null;
     <div class="tab-content-area">
       <div class="tab-pane <?= $tab==='inv'?'show active':'' ?>" id="inv" role="tabpanel">
         <?php include __DIR__.'/public/inventario.php'; ?>
+      </div>
+
+      <div class="tab-pane <?= $tab==='hist'?'show active':'' ?>" id="hist" role="tabpanel">
+        <?php include __DIR__.'/public/historial.php'; ?>
       </div>
       
       <div class="tab-pane <?= $tab==='mm'?'show active':'' ?>" id="mm" role="tabpanel">
