@@ -758,6 +758,11 @@ $flash_ok = flash_get('ok') ?? null;
     if (pane) {
       pane.classList.add('show','active');
     }
+
+     // 🔄 Si se activa la pestaña de movimientos, recargar AJAX
+    if (tab === 'mov' && typeof window.loadMovimientos === 'function') {
+      window.loadMovimientos();
+    }
   }
 
   // Click en tabs
