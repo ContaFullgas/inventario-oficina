@@ -14,12 +14,12 @@ header('Pragma: no-cache');
 
 // Determinar pestaña activa desde la URL (?tab=...)
 $tab = $_GET['tab'] ?? '';
-$tabs = ['inv','mm','gal','add','cclase','ccond','cubi'];
+$tabs = ['inv','mm','mov','gal','add','cclase','ccond','cubi'];
 if (!in_array($tab, $tabs, true)) { $tab = 'inv'; }
 
 // ===== Permisos (admin / consulta) =====
 $is_admin   = auth_is_admin();
-$restricted = ['add','cclase','ccond','cubi'];
+$restricted = ['add','cclase','ccond','cubi','mov'];
 // Si no es admin y pidió tab restringida, fuerzo inv
 if (!$is_admin && in_array($tab, $restricted, true)) {
   $tab = 'inv';
@@ -549,6 +549,11 @@ $flash_ok = flash_get('ok') ?? null;
         <i class="fas fa-boxes"></i>
         <span>Inventario</span>
       </a>
+
+       <a class="tab-link <?= $tab==='mov'?'active':'' ?>" href="#mov" role="tab">
+          <i class="fas fa-exchange-alt"></i>
+          <span>Movimientos</span>
+        </a>
       
       <a class="tab-link <?= $tab==='mm'?'active':'' ?>" href="#mm" role="tab">
         <i class="fas fa-chart-line"></i>
@@ -584,6 +589,10 @@ $flash_ok = flash_get('ok') ?? null;
         <?php include __DIR__.'/public/inventario.php'; ?>
       </div>
       
+      <div class="tab-pane <?= $tab==='mov'?'show active':'' ?>" id="mov" role="tabpanel">
+        <?php include __DIR__.'/public/movimientos.php'; ?>
+      </div>
+
       <div class="tab-pane <?= $tab==='mm'?'show active':'' ?>" id="mm" role="tabpanel">
         <?php include __DIR__.'/public/minmax.php'; ?>
       </div>

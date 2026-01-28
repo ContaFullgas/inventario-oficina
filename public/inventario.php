@@ -1006,13 +1006,31 @@ function buildUrl($params) {
             <?php if ($is_admin): ?>
             <td>
               <div class="btn-action-group">
+
+              <button
+                type="button"
+                class="btn-action btn-action-view btn-mov"
+                data-id="<?=intval($it['id'])?>"
+                data-tipo="ENTRADA"
+                title="Entrada">
+                <i class="bi bi-plus-circle-fill"></i>
+              </button>
+
+              <button
+                type="button"
+                class="btn-action btn-action-view btn-mov"
+                data-id="<?=intval($it['id'])?>"
+                data-tipo="SALIDA"
+                title="Salida">
+                <i class="bi bi-dash-circle-fill"></i>
+              </button>
+
                 <a class="btn-action btn-action-edit"
                   href="public/editar.php?id=<?=intval($it['id'])?>"
                   data-save-scroll
                   title="Editar">
                   <i class="bi bi-pencil-square"></i>
                 </a>
-
 
               <form action="public/ajax/eliminar_item.php" method="post" class="d-inline delete-form">
                 <?= csrf_field() ?>
@@ -1129,6 +1147,45 @@ function buildUrl($params) {
   </div>
 </div>
 
+<!-- Modal para entradas salidas de inventario -->
+<div class="modal fade" id="movModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="movForm">
+        <?= csrf_field() ?>
+        <div class="modal-header">
+          <h5 class="modal-title" id="movTitle"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" name="item_id" id="movItemId">
+          <input type="hidden" name="tipo" id="movTipo">
+
+          <div class="mb-3">
+            <label>Cantidad</label>
+            <input type="number" name="cantidad" class="form-control" min="1" required>
+          </div>
+
+          <div class="mb-3">
+            <label>Comentario</label>
+            <input type="text" name="motivo" class="form-control">
+          </div>
+
+          <div class="alert alert-danger d-none" id="movError"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-primary" type="submit">
+            Confirmar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
 <script>
 /* Restaurar scroll sin efecto visual (archivo incluido) */
 if ('scrollRestoration' in history) {
@@ -1148,6 +1205,53 @@ if (__invScroll !== null) {
 }
 
 </script>
+
+<script>
+document.querySelectorAll('.btn-mov').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('movItemId').value = btn.dataset.id;
+    document.getElementById('movTipo').value   = btn.dataset.tipo;
+    document.getElementById('movTitle').innerText =
+      btn.dataset.tipo === 'ENTRADA' ? 'Entrada de inventario' : 'Salida de inventario';
+
+    document.getElementById('movForm').reset();
+    document.getElementById('movError').classList.add('d-none');
+
+    new bootstrap.Modal(document.getElementById('movModal')).show();
+  });
+});
+
+document.getElementById('movForm').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const form = e.target;
+  const data = new FormData(form);
+
+  const res = await fetch('public/ajax/movimiento_inventario.php', {
+    method: 'POST',
+    body: data
+  });
+
+  const json = await res.json();
+
+  if (!json.ok) {
+    const err = document.getElementById('movError');
+    err.innerText = json.error || 'Error';
+    err.classList.remove('d-none');
+    return;
+  }
+
+  // Actualizar stock en tabla
+  const row = document.querySelector(
+    `.btn-mov[data-id="${data.get('item_id')}"]`
+  ).closest('tr');
+
+  row.querySelector('.stock-display').innerText = json.stock;
+
+  bootstrap.Modal.getInstance(document.getElementById('movModal')).hide();
+});
+</script>
+
 
 <script>
 /* Guarda la posición del scroll al salir a editar */
