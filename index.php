@@ -589,39 +589,8 @@ $flash_ok = flash_get('ok') ?? null;
         <?php include __DIR__.'/public/inventario.php'; ?>
       </div>
 
-      <div class="tab-pane <?= $tab==='hist'?'show active':'' ?>" id="hist">
-        <!-- Filtros del historial -->
-        <form id="historial-filtros" class="row g-3 mb-3">
-          <div class="col-md-4">
-            <input
-              type="text"
-              name="q"
-              class="form-control"
-              placeholder="Buscar herramienta..."
-            >
-          </div>
-
-          <div class="col-md-3">
-            <select name="tipo" class="form-select">
-              <option value="">Todos</option>
-              <option value="uso">Uso</option>
-              <option value="devolucion">Devolución</option>
-            </select>
-          </div>
-
-          <div class="col-md-3">
-            <button class="btn btn-primary w-100">
-              <i class="bi bi-search"></i> Filtrar
-            </button>
-          </div>
-        </form>
-
-        <!-- ⬇️ AQUÍ SE CARGA LA TABLA POR AJAX -->
-        <div id="historial-contenido">
-          <div class="text-center text-muted py-4">
-            Cargando historial...
-          </div>
-        </div>
+      <div class="tab-pane <?= $tab==='hist'?'show active':'' ?>" id="hist" role="tabpanel">
+        <?php include __DIR__.'/public/historial.php'; ?>
       </div>
       
       <div class="tab-pane <?= $tab==='mm'?'show active':'' ?>" id="mm" role="tabpanel">
@@ -816,54 +785,6 @@ links.forEach(a => {
   activate(initial);
 })();
 </script>
-
-<script>
-  //Para recargar con ajax la parte de historial de uso de articulos
-(function(){
-
-  const tabHist = document.querySelector('a[href="#hist"]');
-  const cont = document.getElementById('historial-contenido');
-  const form = document.getElementById('historial-filtros');
-
-  if (!tabHist || !cont) return;
-
-  async function cargarHistorial(params = '') {
-    cont.innerHTML = '<div class="text-center py-4 text-muted">Cargando...</div>';
-
-    const res = await fetch(
-      'public/ajax/historial_listar.php' + params,
-      { credentials: 'same-origin' }
-    );
-
-    cont.innerHTML = await res.text();
-  }
-
-  // Al entrar a la pestaña
-  tabHist.addEventListener('click', () => {
-    setTimeout(() => cargarHistorial(), 100);
-  });
-
-  // Filtros SIN recargar
-  if (form) {
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      const qs = new URLSearchParams(new FormData(form)).toString();
-      cargarHistorial('?' + qs);
-    });
-  }
-
-  // 🌟 Exponer función global para refrescar desde inventario
-  window.refrescarHistorial = cargarHistorial;
-
-  // 👇👇👇 AGREGA ESTO 👇👇👇
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('tab') === 'hist') {
-    setTimeout(() => cargarHistorial(), 150);
-  }
-
-})();
-</script>
-
 
 <!-- Agregar esto ANTES del cierre de </body> en index.php -->
 
