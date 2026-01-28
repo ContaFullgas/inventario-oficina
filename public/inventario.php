@@ -1005,27 +1005,6 @@ function buildUrl($params) {
             
             <?php if ($is_admin): ?>
             <td>
-
-              <button
-                type="button"
-                class="btn-action btn-action-view btn-uso-item"
-                title="Registrar uso"
-                data-id="<?=intval($it['id'])?>"
-                data-nombre="<?=h($it['nombre'])?>"
-                data-tipo="uso">
-                <i class="bi bi-hand-index-thumb"></i>
-              </button>
-
-              <button
-                type="button"
-                class="btn-action btn-action-view btn-devolucion-item"
-                title="Registrar devolución"
-                data-id="<?=intval($it['id'])?>"
-                data-nombre="<?=h($it['nombre'])?>"
-                data-tipo="devolucion">
-                <i class="bi bi-arrow-counterclockwise"></i>
-              </button>
-
               <div class="btn-action-group">
                 <a class="btn-action btn-action-edit"
                   href="public/editar.php?id=<?=intval($it['id'])?>"
@@ -1149,113 +1128,6 @@ function buildUrl($params) {
     </div>
   </div>
 </div>
-
-<!-- Modal de historial -->
-<div class="modal fade" id="historialModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Registrar movimiento</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-        <input type="hidden" id="histItemId">
-        <input type="hidden" id="histTipo">
-
-        <p class="fw-bold" id="histItemNombre"></p>
-
-        <div class="mb-3">
-          <label class="form-label">Observaciones</label>
-          <textarea class="form-control" id="histObservaciones" rows="3"></textarea>
-        </div>
-
-        <div id="histMsg" class="text-danger small d-none"></div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-primary" id="histGuardar">Guardar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  //Funcion para el modal de historial
-(function () {
-
-  const modalEl = document.getElementById('historialModal');
-  if (!modalEl) return;
-
-  let modal = null;
-  function getModal() {
-    if (!modal) {
-      if (!window.bootstrap || !bootstrap.Modal) return null;
-      modal = new bootstrap.Modal(modalEl);
-    }
-    return modal;
-  }
-
-  const itemIdInput = document.getElementById('histItemId');
-  const tipoInput   = document.getElementById('histTipo');
-  const nombreLabel = document.getElementById('histItemNombre');
-  const obsInput    = document.getElementById('histObservaciones');
-  const msgBox      = document.getElementById('histMsg');
-  const guardarBtn  = document.getElementById('histGuardar');
-
-  document.addEventListener('click', function (e) {
-    const btn = e.target.closest('.btn-uso-item, .btn-devolucion-item');
-    if (!btn) return;
-
-    itemIdInput.value = btn.dataset.id;
-    tipoInput.value   = btn.dataset.tipo;
-    nombreLabel.textContent = btn.dataset.nombre;
-    obsInput.value = '';
-    msgBox.classList.add('d-none');
-
-    const m = getModal();
-    if (m) m.show();
-  });
-
-  guardarBtn.addEventListener('click', function () {
-    guardarBtn.disabled = true;
-
-    const data = new URLSearchParams({
-      item_id: itemIdInput.value,
-      tipo: tipoInput.value,
-      observaciones: obsInput.value
-    });
-
-    fetch('public/ajax/historial_items.php', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: data.toString()
-    })
-    .then(r => r.json())
-    .then(resp => {
-      if (resp.status === 'ok') {
-        const m = getModal();
-        if (m) m.hide();
-      } else {
-        msgBox.textContent = resp.message || 'Error';
-        msgBox.classList.remove('d-none');
-      }
-    })
-    .catch(() => {
-      msgBox.textContent = 'Error de conexión';
-      msgBox.classList.remove('d-none');
-    })
-    .finally(() => {
-      guardarBtn.disabled = false;
-    });
-  });
-
-})();
-
-</script>
-
 
 <script>
 /* Restaurar scroll sin efecto visual (archivo incluido) */
@@ -1544,4 +1416,3 @@ document.addEventListener('click', function (e) {
 })();
 
 </script>
-
