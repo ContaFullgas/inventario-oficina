@@ -294,8 +294,10 @@ function buildUrl($params) {
 
 /* Botones de acción mejorados */
 .btn-action-group {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.5rem;
+  max-width: 90px;
 }
 
 .btn-action {
