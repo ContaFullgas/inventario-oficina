@@ -16,18 +16,6 @@ $items_por_pagina = isset($_GET['per_page_inv']) && in_array($_GET['per_page_inv
 $pagina_actual = isset($_GET['page_inv']) ? max(1, (int)$_GET['page_inv']) : 1;
 $offset = ($pagina_actual - 1) * $items_por_pagina;
 
-$usuarios = [];
-
-if ($is_admin) {
-  $usuarios = $pdo->query("
-    SELECT id, usuario 
-    FROM usuarios 
-    WHERE activo = 1 
-    ORDER BY usuario
-  ")->fetchAll();
-}
-
-
 // Contar total de registros
 $sqlCount = "SELECT COUNT(*) as total
         FROM items i
@@ -1171,20 +1159,6 @@ function buildUrl($params) {
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
-      <!-- Mostrar lista de usuarios -->
-      <?php if ($is_admin): ?>
-        <div class="mb-3">
-          <label class="form-label">Usuario que utiliza la herramienta</label>
-          <select class="form-select" id="histUsuario">
-            <?php foreach ($usuarios as $u): ?>
-              <option value="<?=$u['id']?>">
-                <?=h($u['usuario'])?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-      <?php endif; ?>
-
       <div class="modal-body">
         <input type="hidden" id="histItemId">
         <input type="hidden" id="histTipo">
@@ -1252,11 +1226,6 @@ function buildUrl($params) {
       tipo: tipoInput.value,
       observaciones: obsInput.value
     });
-
-    const usuarioSelect = document.getElementById('histUsuario');
-    if (usuarioSelect) {
-      data.append('usuario_id', usuarioSelect.value);
-    }
 
     fetch('public/ajax/historial_items.php', {
       method: 'POST',
