@@ -831,6 +831,50 @@ function buildUrl($params) {
     font-size: 2.5rem;
   }
 }
+
+#movModal .modal-content {
+  border-radius: 0.75rem !important;
+  border: none !important;
+}
+
+#movModal .modal-header {
+  padding: 1.25rem 1.5rem !important;
+  background-color: #f8f9fa !important;
+}
+
+#movModal .modal-body {
+  padding: 1.5rem !important;
+}
+
+#movModal .modal-footer {
+  padding: 1rem 1.5rem !important;
+  background-color: #f8f9fa !important;
+}
+
+#movModal .form-label {
+  margin-bottom: 0.5rem !important;
+  color: #495057 !important;
+  font-weight: 600 !important;
+}
+
+#movModal .form-control {
+  border-radius: 0.375rem !important;
+  padding: 0.625rem 0.875rem !important;
+}
+
+#movModal .form-control:focus {
+  border-color: #86b7fe !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15) !important;
+}
+
+#movModal .btn-primary {
+  font-weight: 500 !important;
+  padding: 0.5rem 1.5rem !important;
+}
+
+#movModal .btn-secondary {
+  padding: 0.5rem 1rem !important;
+}
 </style>
 
 <div class="inventario-wrapper">
@@ -1150,33 +1194,54 @@ function buildUrl($params) {
 <!-- Modal para entradas salidas de inventario -->
 <div class="modal fade" id="movModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content shadow-lg border-0">
       <form id="movForm">
         <?= csrf_field() ?>
-        <div class="modal-header">
-          <h5 class="modal-title" id="movTitle"></h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-header bg-light border-bottom">
+          <h5 class="modal-title fw-bold" id="movTitle"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
 
-        <div class="modal-body">
+        <div class="modal-body p-4">
           <input type="hidden" name="item_id" id="movItemId">
           <input type="hidden" name="tipo" id="movTipo">
 
-          <div class="mb-3">
-            <label>Cantidad</label>
-            <input type="number" name="cantidad" class="form-control" min="1" required>
+          <div class="mb-4">
+            <label for="movCantidad" class="form-label fw-semibold">
+              Cantidad <span class="text-danger">*</span>
+            </label>
+            <input 
+              type="number" 
+              name="cantidad" 
+              id="movCantidad"
+              class="form-control" 
+              min="1" 
+              required
+              placeholder="Ingresa la cantidad">
           </div>
 
           <div class="mb-3">
-            <label>Comentario</label>
-            <input type="text" name="motivo" class="form-control">
+            <label for="movMotivo" class="form-label fw-semibold">Comentario</label>
+            <input 
+              type="text" 
+              name="motivo" 
+              id="movMotivo"
+              class="form-control" 
+              placeholder="Describe el motivo del movimiento (opcional)">
           </div>
 
-          <div class="alert alert-danger d-none" id="movError"></div>
+          <div class="alert alert-danger d-none mb-0" id="movError" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span id="movErrorText"></span>
+          </div>
         </div>
 
-        <div class="modal-footer">
-          <button class="btn btn-primary" type="submit">
+        <div class="modal-footer bg-light border-top">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+          <button class="btn btn-primary px-4" type="submit">
+            <i class="bi bi-check-circle me-1"></i>
             Confirmar
           </button>
         </div>
