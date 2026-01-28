@@ -67,7 +67,7 @@ if (!is_null($clase_id)) {
   $sql .= " AND i.clase_id = :cid";
   $params[':cid'] = $clase_id;
 }
-$sql .= " ORDER BY i.nombre LIMIT :limit OFFSET :offset";
+$sql .= " ORDER BY c3.nombre, i.nombre LIMIT :limit OFFSET :offset";
 
 $stmt = $pdo->prepare($sql);
 foreach ($params as $key => $val) {

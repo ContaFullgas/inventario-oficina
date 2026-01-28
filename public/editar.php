@@ -553,7 +553,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </label>
           <div class="input-group">
             <label  class="input-group-text text-white"><i class="bi bi-layers-fill"></i></label>
-            <input type="number" name="cantidad" class="form-control" min="0" value="<?=intval($item['cantidad'])?>">
+            <input type="number" name="cantidad" class="form-control" min="0" value="<?=intval($item['cantidad'])?>" readonly>
           </div>
           
         </div>

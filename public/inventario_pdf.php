@@ -135,7 +135,7 @@ if (!is_null($clase_id)) {
     $sql .= " AND i.clase_id = :cid";
     $params[':cid'] = $clase_id;
 }
-$sql .= " ORDER BY i.nombre";
+$sql .= " ORDER BY c3.nombre, i.nombre";
 
 try {
     $stmt = $pdo->prepare($sql);
@@ -295,7 +295,7 @@ imprimir_encabezado($pdf, $w_num, $w_img, $w_prod, $w_ubic, $w_cond, $w_stock);
 if (empty($items)) {
     $pdf->Cell(0,7,utf8_decode('No hay artículos en esta página.'),1,1,'C');
 } else {
-    $i = $offset + 1;
+    // $i = $offset + 1;
     foreach ($items as $it) {
         // refrescar contador por iteración para prevenir timeouts parciales
         if (function_exists('set_time_limit')) {
@@ -308,7 +308,7 @@ if (empty($items)) {
         }
         $startX = $pdf->GetX(); $startY = $pdf->GetY();
 
-        $pdf->Cell($w_num,$rowH,$i++,1,0,'C');
+        $pdf->Cell($w_num,$rowH,(string)$it['id'],1,0,'C');
         $pdf->Cell($w_img,$rowH,'',1,0,'C'); // dibuja la celda
 
         // seleccionar ruta original de imagen o thumb permanente si existe
