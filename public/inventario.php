@@ -962,10 +962,15 @@ function buildUrl($params) {
           </tr>
           <?php else: ?>
           <?php foreach ($items as $it):
-            $estado = 'OK';
-            $badgeClass = 'badge-ok';
-            $iconoEstado = 'check-circle-fill';
-            
+
+          $isInactive = isset($it['activo']) && !$it['activo'];
+          $rowClass   = $isInactive ? 'table-secondary opacity-75' : '';
+
+          if (!$it['activo']) {
+            $estado = 'Inactivo';
+            $badgeClass = 'bg-secondary';
+            $iconoEstado = 'pause-circle-fill';
+          } else {
             if ((int)$it['cantidad'] <= (int)$it['min_stock']) {
               $estado = 'Reponer';
               $badgeClass = 'badge-reponer';
@@ -974,12 +979,18 @@ function buildUrl($params) {
               $estado = 'Bajo';
               $badgeClass = 'badge-bajo';
               $iconoEstado = 'exclamation-circle-fill';
+            } else {
+              $estado = 'OK';
+              $badgeClass = 'badge-ok';
+              $iconoEstado = 'check-circle-fill';
             }
+          }
 
-            $rowDataAttr = (!empty($it['imagen'])) ? ' data-img="'.h($it['imagen']).'"' : '';
-            $rowStyle = (!empty($it['imagen'])) ? ' style="cursor:pointer;"' : '';
-          ?>
-          <tr<?=$rowDataAttr?><?=$rowStyle?>>
+          $rowDataAttr = (!empty($it['imagen'])) ? ' data-img="'.h($it['imagen']).'"' : '';
+          $rowStyle    = (!empty($it['imagen'])) ? ' style="cursor:pointer;"' : '';
+        ?>
+
+          <tr class="<?=$rowClass?>"<?=$rowDataAttr?><?=$rowStyle?>>
             <td>
               <?php if (!empty($it['imagen'])): ?>
                 <a href="#" class="img-thumb d-inline-block" data-img="<?=h($it['imagen'])?>" title="Ver imagen">
@@ -1053,38 +1064,60 @@ function buildUrl($params) {
             <td>
               <div class="btn-action-group">
 
-              <button
-                type="button"
-                class="btn-action btn-action-view btn-mov"
-                data-id="<?=intval($it['id'])?>"
-                data-tipo="ENTRADA"
-                title="Entrada">
-                <i class="bi bi-plus-circle-fill"></i>
-              </button>
+            <?php if ($it['activo']): ?>
 
-              <button
-                type="button"
-                class="btn-action btn-action-view btn-mov"
-                data-id="<?=intval($it['id'])?>"
-                data-tipo="SALIDA"
-                title="Salida">
-                <i class="bi bi-dash-circle-fill"></i>
-              </button>
+            <!-- ENTRADA -->
+            <button
+              type="button"
+              class="btn-action btn-action-view btn-mov"
+              data-id="<?=intval($it['id'])?>"
+              data-tipo="ENTRADA"
+              title="Entrada">
+              <i class="bi bi-plus-circle-fill"></i>
+            </button>
 
-                <a class="btn-action btn-action-edit"
-                  href="public/editar.php?id=<?=intval($it['id'])?>"
-                  data-save-scroll
-                  title="Editar">
-                  <i class="bi bi-pencil-square"></i>
-                </a>
+            <!-- SALIDA -->
+            <button
+              type="button"
+              class="btn-action btn-action-view btn-mov"
+              data-id="<?=intval($it['id'])?>"
+              data-tipo="SALIDA"
+              title="Salida">
+              <i class="bi bi-dash-circle-fill"></i>
+            </button>
 
-              <form action="public/ajax/eliminar_item.php" method="post" class="d-inline delete-form">
-                <?= csrf_field() ?>
-                <input type="hidden" name="id" value="<?= intval($it['id']) ?>">
-                <button type="button" class="btn-action btn-action-delete">
-                  <i class="bi bi-trash-fill"></i>
-                </button>
-              </form>
+            <!-- EDITAR -->
+            <a class="btn-action btn-action-edit"
+              href="public/editar.php?id=<?=intval($it['id'])?>"
+              data-save-scroll
+              title="Editar">
+              <i class="bi bi-pencil-square"></i>
+            </a>
+
+            <!-- DESACTIVAR -->
+            <button
+              type="button"
+              class="btn-action btn-action-view btn-toggle"
+              data-id="<?=intval($it['id'])?>"
+              data-estado="0"
+              title="Desactivar">
+              <i class="bi bi-pause-circle-fill"></i>
+            </button>
+
+          <?php else: ?>
+
+            <!-- ACTIVAR -->
+            <button
+              type="button"
+              class="btn-action btn-action-edit btn-toggle"
+              data-id="<?=intval($it['id'])?>"
+              data-estado="1"
+              title="Activar">
+              <i class="bi bi-play-circle-fill"></i>
+            </button>
+
+          <?php endif; ?>
+
 
               </div>
             </td>
@@ -1316,6 +1349,106 @@ document.getElementById('movForm').addEventListener('submit', async e => {
   row.querySelector('.stock-display').innerText = json.stock;
 
   bootstrap.Modal.getInstance(document.getElementById('movModal')).hide();
+});
+</script>
+
+<script>
+// Activar / desactivar items SIN recargar
+document.addEventListener('click', async function (e) {
+  const btn = e.target.closest('.btn-toggle');
+  if (!btn) return;
+
+  const id     = btn.dataset.id;
+  const estado = parseInt(btn.dataset.estado, 10);
+
+  const confirmMsg = estado === 0
+    ? '¿Desactivar este artículo?'
+    : '¿Activar este artículo?';
+
+  if (!confirm(confirmMsg)) return;
+
+  const data = new FormData();
+  data.append('id', id);
+  data.append('estado', estado);
+  data.append('csrf', document.querySelector('input[name="csrf"]')?.value);
+
+  const res  = await fetch('public/ajax/toggle_item.php', {
+    method: 'POST',
+    body: data
+  });
+
+  const json = await res.json();
+
+  if (!json.ok) {
+    alert(json.message || 'Error');
+    return;
+  }
+
+  /* ========= ACTUALIZAR UI ========= */
+
+  const row = btn.closest('tr');
+  const badge = row.querySelector('.badge-custom');
+  const acciones = row.querySelector('.btn-action-group');
+
+  if (estado === 0) {
+    // 👉 DESACTIVADO
+    row.classList.add('table-secondary', 'opacity-75');
+
+    badge.className = 'badge-custom bg-secondary';
+    badge.innerHTML = `<i class="bi bi-pause-circle-fill"></i> Inactivo`;
+
+    acciones.innerHTML = `
+      <button
+        type="button"
+        class="btn-action btn-action-edit btn-toggle"
+        data-id="${id}"
+        data-estado="1"
+        title="Activar">
+        <i class="bi bi-play-circle-fill"></i>
+      </button>
+    `;
+  } else {
+    // 👉 ACTIVADO
+    row.classList.remove('table-secondary', 'opacity-75');
+
+    badge.className = 'badge-custom badge-ok';
+    badge.innerHTML = `<i class="bi bi-check-circle-fill"></i> OK`;
+
+    acciones.innerHTML = `
+      <button
+        type="button"
+        class="btn-action btn-action-view btn-mov"
+        data-id="${id}"
+        data-tipo="ENTRADA"
+        title="Entrada">
+        <i class="bi bi-plus-circle-fill"></i>
+      </button>
+
+      <button
+        type="button"
+        class="btn-action btn-action-view btn-mov"
+        data-id="${id}"
+        data-tipo="SALIDA"
+        title="Salida">
+        <i class="bi bi-dash-circle-fill"></i>
+      </button>
+
+      <a class="btn-action btn-action-edit"
+        href="public/editar.php?id=${id}"
+        title="Editar">
+        <i class="bi bi-pencil-square"></i>
+      </a>
+
+      <button
+        type="button"
+        class="btn-action btn-action-view btn-toggle"
+        data-id="${id}"
+        data-estado="0"
+        title="Desactivar">
+        <i class="bi bi-pause-circle-fill"></i>
+      </button>
+    `;
+  }
 });
 </script>
 
