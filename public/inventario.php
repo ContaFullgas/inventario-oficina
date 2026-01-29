@@ -10,6 +10,8 @@ $is_admin = function_exists('auth_is_admin') ? auth_is_admin() : false;
 
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 $clase_id = (isset($_GET['clase_id']) && $_GET['clase_id'] !== '') ? (int)$_GET['clase_id'] : null;
+$solo_inactivos = isset($_GET['inactivos']) && $_GET['inactivos'] === '1';
+
 
 // Paginación
 $items_por_pagina = isset($_GET['per_page_inv']) && in_array($_GET['per_page_inv'], [10, 25, 50, 100]) ? (int)$_GET['per_page_inv'] : 25;
@@ -37,6 +39,11 @@ if (!is_null($clase_id)) {
   $sqlCount .= " AND i.clase_id = :cid";
   $paramsCount[':cid'] = $clase_id;
 }
+
+if ($solo_inactivos) {
+  $sqlCount .= " AND i.activo = 0";
+}
+
 
 $stmtCount = $pdo->prepare($sqlCount);
 $stmtCount->execute($paramsCount);
@@ -67,6 +74,11 @@ if (!is_null($clase_id)) {
   $sql .= " AND i.clase_id = :cid";
   $params[':cid'] = $clase_id;
 }
+
+if ($solo_inactivos) {
+  $sql .= " AND i.activo = 0";
+}
+
 $sql .= " ORDER BY c3.nombre, i.nombre LIMIT :limit OFFSET :offset";
 
 $stmt = $pdo->prepare($sql);
@@ -919,7 +931,7 @@ function buildUrl($params) {
       </div>
     </div>
     
-     <div class="col-md-2">
+    <div class="col-md-2">
       <a class="btn btn-success w-100" href="index.php?tab=inv#inv">
         <i class="bi bi-arrow-clockwise"></i> Limpiar
       </a>
@@ -931,6 +943,25 @@ function buildUrl($params) {
         <i class="bi bi-filetype-pdf"></i> Descargar PDF
       </a>
     </div>
+
+    <div class="col-md-3">
+      <div class="form-check mt-2">
+        <!-- input vacio para que cuando el checkbox este vacio de mande 0 siempre -->
+        <input type="hidden" name="inactivos" value="0">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          name="inactivos"
+          value="1"
+          id="chkInactivos"
+          <?= $solo_inactivos ? 'checked' : '' ?>
+        >
+        <label class="form-check-label fw-semibold" for="chkInactivos">
+          Solo inactivos
+        </label>
+      </div>
+    </div>
+
   </form>
 
   <div class="table-container">
@@ -1150,61 +1181,98 @@ function buildUrl($params) {
     </div>
 
     <div class="pagination-controls">
-      <!-- Botón Primera Página -->
-      <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>1, 'per_page_inv'=>$items_por_pagina])?>" 
-         class="pagination-btn arrow <?=$pagina_actual==1?'disabled':''?>">
+
+      <!-- Primera página -->
+      <a href="<?=buildUrl([
+        'q' => $q,
+        'clase_id' => $clase_id,
+        'inactivos' => $solo_inactivos ? '1' : null,
+        'page_inv' => 1,
+        'per_page_inv' => $items_por_pagina
+      ])?>" class="pagination-btn arrow <?=$pagina_actual==1?'disabled':''?>">
         <i class="bi bi-chevron-double-left"></i>
       </a>
 
-      <!-- Botón Anterior -->
-      <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>max(1,$pagina_actual-1), 'per_page_inv'=>$items_por_pagina])?>" 
-         class="pagination-btn arrow <?=$pagina_actual==1?'disabled':''?>">
+      <!-- Página anterior -->
+      <a href="<?=buildUrl([
+        'q' => $q,
+        'clase_id' => $clase_id,
+        'inactivos' => $solo_inactivos ? '1' : null,
+        'page_inv' => max(1, $pagina_actual - 1),
+        'per_page_inv' => $items_por_pagina
+      ])?>" class="pagination-btn arrow <?=$pagina_actual==1?'disabled':''?>">
         <i class="bi bi-chevron-left"></i>
       </a>
 
       <?php
-      // Lógica para mostrar páginas
-      $rango = 2; // Cuántas páginas mostrar a cada lado de la actual
+      $rango = 2;
       $inicio = max(1, $pagina_actual - $rango);
-      $fin = min($total_paginas, $pagina_actual + $rango);
+      $fin    = min($total_paginas, $pagina_actual + $rango);
 
-      // Mostrar primera página si no está en el rango
-      if ($inicio > 1) {
-        ?>
-        <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>1, 'per_page_inv'=>$items_por_pagina])?>" 
-           class="pagination-btn">1</a>
+      if ($inicio > 1): ?>
+        <a href="<?=buildUrl([
+          'q'=>$q,
+          'clase_id'=>$clase_id,
+          'inactivos'=>$solo_inactivos ? '1' : null,
+          'page_inv'=>1,
+          'per_page_inv'=>$items_por_pagina
+        ])?>" class="pagination-btn">1</a>
+
         <?php if ($inicio > 2): ?>
           <span class="pagination-ellipsis">...</span>
         <?php endif; ?>
-      <?php }
+      <?php endif; ?>
 
-      // Páginas en el rango
-      for ($i = $inicio; $i <= $fin; $i++): ?>
-        <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>$i, 'per_page_inv'=>$items_por_pagina])?>" 
-           class="pagination-btn <?=$i==$pagina_actual?'active':''?>"><?=$i?></a>
-      <?php endfor;
+      <?php for ($i = $inicio; $i <= $fin; $i++): ?>
+        <a href="<?=buildUrl([
+          'q'=>$q,
+          'clase_id'=>$clase_id,
+          'inactivos'=>$solo_inactivos ? '1' : null,
+          'page_inv'=>$i,
+          'per_page_inv'=>$items_por_pagina
+        ])?>" class="pagination-btn <?=$i==$pagina_actual?'active':''?>">
+          <?=$i?>
+        </a>
+      <?php endfor; ?>
 
-      // Mostrar última página si no está en el rango
-      if ($fin < $total_paginas) {
-        if ($fin < $total_paginas - 1): ?>
+      <?php if ($fin < $total_paginas): ?>
+        <?php if ($fin < $total_paginas - 1): ?>
           <span class="pagination-ellipsis">...</span>
         <?php endif; ?>
-        <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>$total_paginas, 'per_page_inv'=>$items_por_pagina])?>" 
-           class="pagination-btn"><?=$total_paginas?></a>
-      <?php } ?>
 
-      <!-- Botón Siguiente -->
-      <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>min($total_paginas,$pagina_actual+1), 'per_page_inv'=>$items_por_pagina])?>" 
-         class="pagination-btn arrow <?=$pagina_actual==$total_paginas?'disabled':''?>">
+        <a href="<?=buildUrl([
+          'q'=>$q,
+          'clase_id'=>$clase_id,
+          'inactivos'=>$solo_inactivos ? '1' : null,
+          'page_inv'=>$total_paginas,
+          'per_page_inv'=>$items_por_pagina
+        ])?>" class="pagination-btn"><?=$total_paginas?></a>
+      <?php endif; ?>
+
+      <!-- Página siguiente -->
+      <a href="<?=buildUrl([
+        'q'=>$q,
+        'clase_id'=>$clase_id,
+        'inactivos'=>$solo_inactivos ? '1' : null,
+        'page_inv'=>min($total_paginas, $pagina_actual + 1),
+        'per_page_inv'=>$items_por_pagina
+      ])?>" class="pagination-btn arrow <?=$pagina_actual==$total_paginas?'disabled':''?>">
         <i class="bi bi-chevron-right"></i>
       </a>
 
-      <!-- Botón Última Página -->
-      <a href="<?=buildUrl(['q'=>$q, 'clase_id'=>$clase_id, 'page_inv'=>$total_paginas, 'per_page_inv'=>$items_por_pagina])?>" 
-         class="pagination-btn arrow <?=$pagina_actual==$total_paginas?'disabled':''?>">
+      <!-- Última página -->
+      <a href="<?=buildUrl([
+        'q'=>$q,
+        'clase_id'=>$clase_id,
+        'inactivos'=>$solo_inactivos ? '1' : null,
+        'page_inv'=>$total_paginas,
+        'per_page_inv'=>$items_por_pagina
+      ])?>" class="pagination-btn arrow <?=$pagina_actual==$total_paginas?'disabled':''?>">
         <i class="bi bi-chevron-double-right"></i>
       </a>
+
     </div>
+
   </div>
   <?php endif; ?>
 </div>
