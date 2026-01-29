@@ -908,6 +908,25 @@ function buildUrl($params) {
       </div>
     </div>
 
+    <div class="col-md-3">
+      <div class="form-check mt-2">
+        <!-- input vacio para que cuando el checkbox este vacio de mande 0 siempre -->
+        <input type="hidden" name="inactivos" value="0">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          name="inactivos"
+          value="1"
+          id="chkInactivos"
+          style="border: 2px solid #333; box-shadow: none;"
+          <?= $solo_inactivos ? 'checked' : '' ?>
+        >
+        <label class="form-check-label fw-semibold" for="chkInactivos"  style="user-select: none; -webkit-user-select: none; -ms-user-select: none;">
+          Solo inactivos
+        </label>
+      </div>
+    </div>
+
     <!-- 👉 AQUÍ VA EL BOTÓN -->
     <div class="col-md-2">
       <button type="submit" class="btn btn-primary w-100">
@@ -942,24 +961,6 @@ function buildUrl($params) {
          href="public/inventario_pdf.php?q=<?=urlencode($q)?><?= !is_null($clase_id) ? '&clase_id='.$clase_id : '' ?>">
         <i class="bi bi-filetype-pdf"></i> Descargar PDF
       </a>
-    </div>
-
-    <div class="col-md-3">
-      <div class="form-check mt-2">
-        <!-- input vacio para que cuando el checkbox este vacio de mande 0 siempre -->
-        <input type="hidden" name="inactivos" value="0">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          name="inactivos"
-          value="1"
-          id="chkInactivos"
-          <?= $solo_inactivos ? 'checked' : '' ?>
-        >
-        <label class="form-check-label fw-semibold" for="chkInactivos">
-          Solo inactivos
-        </label>
-      </div>
     </div>
 
   </form>
