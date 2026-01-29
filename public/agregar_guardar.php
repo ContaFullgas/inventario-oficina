@@ -1,6 +1,5 @@
 <?php
-
-//Archivo agregar_guardar.php
+// Archivo: agregar_guardar.php
 
 ob_start();
 require_once __DIR__.'/../config/db.php';
@@ -28,6 +27,7 @@ if ($nombre === '') $errors[] = 'El nombre es obligatorio';
 if ($min_stock < 0 || $max_stock < 0 || $cantidad < 0) $errors[] = 'Cantidades/stock no pueden ser negativos';
 if ($max_stock < $min_stock) $errors[] = 'El máximo no puede ser menor que el mínimo';
 
+// Imagen
 $imgName = null;
 if (!empty($_FILES['imagen']['name'])) {
   $ext = strtolower(pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION));
@@ -38,7 +38,9 @@ if (!empty($_FILES['imagen']['name'])) {
   } else {
     $imgName = uniqid('img_', true).'.'.$ext;
     $dest = __DIR__.'/../uploads/'.$imgName;
-    if (!is_dir(__DIR__.'/../uploads')) @mkdir(__DIR__.'/../uploads', 0775, true);
+    if (!is_dir(__DIR__.'/../uploads')) {
+      @mkdir(__DIR__.'/../uploads', 0775, true);
+    }
     move_uploaded_file($_FILES['imagen']['tmp_name'], $dest);
   }
 }
@@ -49,22 +51,63 @@ if ($errors) {
   exit;
 }
 
-$sql = "INSERT INTO items
-          (nombre, clase_id, cantidad, condicion_id, notas, ubicacion_id, min_stock, max_stock, imagen)
-        VALUES
-          (:nombre,:clase_id,:cantidad,:condicion_id,:notas,:ubicacion_id,:min_stock,:max_stock,:imagen)";
-$stmt = $pdo->prepare($sql);
-$stmt->execute([
-  ':nombre'        => $nombre,
-  ':clase_id'      => $clase_id,
-  ':cantidad'      => $cantidad,
-  ':condicion_id'  => $condicion_id,
-  ':notas'         => $notas ?: null,
-  ':ubicacion_id'  => $ubicacion_id,
-  ':min_stock'     => $min_stock,
-  ':max_stock'     => $max_stock,
-  ':imagen'        => $imgName
-]);
+try {
+  $pdo->beginTransaction();
+
+  // 1️⃣ Crear item con stock = 0
+  $sql = "INSERT INTO items
+            (nombre, clase_id, cantidad, condicion_id, notas, ubicacion_id, min_stock, max_stock, imagen)
+          VALUES
+            (:nombre, :clase_id, 0, :condicion_id, :notas, :ubicacion_id, :min_stock, :max_stock, :imagen)";
+  $stmt = $pdo->prepare($sql);
+  $stmt->execute([
+    ':nombre'        => $nombre,
+    ':clase_id'      => $clase_id,
+    ':condicion_id'  => $condicion_id,
+    ':notas'         => $notas ?: null,
+    ':ubicacion_id'  => $ubicacion_id,
+    ':min_stock'     => $min_stock,
+    ':max_stock'     => $max_stock,
+    ':imagen'        => $imgName
+  ]);
+
+  $item_id = $pdo->lastInsertId();
+
+  // 2️⃣ Si hay cantidad inicial → registrar ENTRADA
+  if ($cantidad > 0) {
+
+    // Movimiento
+    $stmt = $pdo->prepare("
+      INSERT INTO inventario_movimientos
+        (item_id, tipo, cantidad, motivo)
+      VALUES
+        (:item_id, 'ENTRADA', :cantidad, 'Alta inicial del artículo')
+    ");
+    $stmt->execute([
+      ':item_id' => $item_id,
+      ':cantidad' => $cantidad
+    ]);
+
+    // Actualizar stock
+    $stmt = $pdo->prepare("
+      UPDATE items
+      SET cantidad = cantidad + :cantidad
+      WHERE id = :id
+    ");
+    $stmt->execute([
+      ':cantidad' => $cantidad,
+      ':id'       => $item_id
+    ]);
+  }
+
+  $pdo->commit();
+
+} catch (Exception $e) {
+  $pdo->rollBack();
+  flash_set('ok', 'Error al guardar el producto');
+  header('Location: ../index.php?tab=add#add', true, 303);
+  exit;
+}
 
 flash_set('ok', '¡Producto agregado correctamente!');
 $dest = '../index.php?tab=inv#inv';
@@ -73,5 +116,15 @@ if (!headers_sent()) {
   header("Location: $dest", true, 303);
   exit;
 }
-echo '<!doctype html><html><head><meta http-equiv="refresh" content="0;url='.htmlspecialchars($dest,ENT_QUOTES,'UTF-8').'"></head><body><script>location.replace("'.htmlspecialchars($dest,ENT_QUOTES,'UTF-8').'");</script><a href="'.htmlspecialchars($dest,ENT_QUOTES,'UTF-8').'">Continuar</a></body></html>';
+
+echo '<!doctype html>
+<html>
+<head>
+  <meta http-equiv="refresh" content="0;url='.htmlspecialchars($dest,ENT_QUOTES,'UTF-8').'">
+</head>
+<body>
+<script>location.replace("'.htmlspecialchars($dest,ENT_QUOTES,'UTF-8').'");</script>
+<a href="'.htmlspecialchars($dest,ENT_QUOTES,'UTF-8').'">Continuar</a>
+</body>
+</html>';
 exit;
