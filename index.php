@@ -973,50 +973,57 @@ links.forEach(a => {
   
   //Funcion ajax para eliminar articulos sin recargar la pagina y perder los filtros
   async function ajaxDelete(form) {
-  const url = form.getAttribute('action');
-  const formData = new FormData(form);
+    // 🛑 Protección absoluta
+    if (!form || !(form instanceof HTMLFormElement)) {
+      console.error('❌ ajaxDelete llamado sin formulario válido', form);
+      return;
+    }
 
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    });
+    const url = form.action; // ← más seguro que getAttribute
+    const formData = new FormData(form);
 
-    const text = await response.text();
-
-    let data;
     try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error('Respuesta no JSON:', text);
-      alert('Sesión expirada o error de permisos');
-      return;
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+
+      const text = await response.text();
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error('Respuesta no JSON:', text);
+        alert('Sesión expirada o error de permisos');
+        return;
+      }
+
+      if (!data.ok) {
+        alert(data.message || 'Error al eliminar');
+        return;
+      }
+
+      // Quitar fila visualmente
+      const row = form.closest('tr');
+      if (row) {
+        row.style.transition = 'all 0.3s ease';
+        row.style.opacity = '0';
+        row.style.transform = 'scale(0.95)';
+        setTimeout(() => row.remove(), 300);
+      }
+
+      showFlash('Registro eliminado correctamente');
+
+    } catch (error) {
+      console.error(error);
+      alert('Error de comunicación con el servidor');
     }
-
-    if (!data.ok) {
-      alert(data.message || 'Error al eliminar');
-      return;
-    }
-
-    // 🔥 Quitar fila
-    const row = form.closest('tr');
-    if (row) {
-      row.style.transition = 'all 0.3s ease';
-      row.style.opacity = '0';
-      row.style.transform = 'scale(0.95)';
-      setTimeout(() => row.remove(), 300);
-    }
-
-    showFlash('Registro eliminado correctamente');
-
-  } catch (error) {
-    console.error(error);
-    alert('Error de comunicación con el servidor');
   }
-}
+
 
 
 // function showFlash(message) {

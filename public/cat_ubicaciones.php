@@ -1,65 +1,135 @@
 <?php
-
-//Archivo cat_ubicaciones.php
+// ==================================================
+// cat_ubicaciones.php
+// ==================================================
 
 ob_start();
+
 require_once __DIR__.'/../config/db.php';
 require_once __DIR__.'/../config/util.php';
+require_once __DIR__.'/../config/auth.php';
+require_once __DIR__.'/../config/ajax.php';
 
-$errors = [];
+// ========== SEGURIDAD ==========
+auth_check();
+$is_admin = auth_is_admin();
+
+// Detectar AJAX
+$is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+           strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+// Bloquear POST si no es admin
+if (!$is_admin && $_SERVER['REQUEST_METHOD'] === 'POST') {
+  if ($is_ajax) ajax_response(false,'Sin permisos');
+  http_response_code(403);
+  exit('Sin permisos');
+}
+
+// ===============================================
+
+$errors  = [];
 $edit_id = isset($_GET['edit']) ? (int)$_GET['edit'] : 0;
 
+// ================= POST =================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
   check_csrf();
 
-  if (isset($_POST['accion_ubi']) && $_POST['accion_ubi'] === 'add') {
+  // ---------- AGREGAR ----------
+  if (($_POST['accion_ubi'] ?? '') === 'add') {
+
     $nombre = trim($_POST['nombre'] ?? '');
+
     if ($nombre === '') $errors[] = 'El nombre es obligatorio';
+
     if (!$errors) {
       try {
-        $pdo->prepare("INSERT INTO cat_ubicaciones (nombre) VALUES (:n)")->execute([':n'=>$nombre]);
+        $pdo->prepare(
+          "INSERT INTO cat_ubicaciones (nombre) VALUES (:n)"
+        )->execute([':n'=>$nombre]);
+
+        if ($is_ajax) ajax_response(true,'Ubicación agregada');
+
         flash_set('ok','Ubicación agregada');
-        header('Location: ../index.php?tab=cubi#cubi', true, 303); exit;
+        header('Location: ../index.php?tab=cubi#cubi', true, 303);
+        exit;
+
       } catch (PDOException $e) {
         $errors[] = 'No se pudo agregar (¿duplicado?)';
       }
     }
   }
 
-  if (isset($_POST['accion_ubi']) && $_POST['accion_ubi'] === 'upd') {
-    $id = (int)($_POST['id'] ?? 0);
+  // ---------- ACTUALIZAR ----------
+  if (($_POST['accion_ubi'] ?? '') === 'upd') {
+
+    $id     = (int)($_POST['id'] ?? 0);
     $nombre = trim($_POST['nombre'] ?? '');
+
     if ($id <= 0)       $errors[] = 'ID inválido';
     if ($nombre === '') $errors[] = 'El nombre es obligatorio';
 
     if (!$errors) {
       try {
-        $pdo->prepare("UPDATE cat_ubicaciones SET nombre=:n WHERE id=:id")
-            ->execute([':n'=>$nombre, ':id'=>$id]);
+        $pdo->prepare(
+          "UPDATE cat_ubicaciones SET nombre=:n WHERE id=:id"
+        )->execute([
+          ':n'=>$nombre,
+          ':id'=>$id
+        ]);
+
+        if ($is_ajax) ajax_response(true,'Ubicación actualizada');
+
         flash_set('ok','Ubicación actualizada');
-        header('Location: ../index.php?tab=cubi#cubi', true, 303); exit;
+        header('Location: ../index.php?tab=cubi#cubi', true, 303);
+        exit;
+
       } catch (PDOException $e) {
         $errors[] = 'No se pudo actualizar (¿duplicado?)';
       }
     }
+
     $edit_id = $id;
   }
 
-  if (isset($_POST['accion_ubi']) && $_POST['accion_ubi'] === 'del') {
+  // ---------- ELIMINAR ----------
+  if (($_POST['accion_ubi'] ?? '') === 'del') {
+
     $id = (int)($_POST['id'] ?? 0);
-    if ($id > 0) {
-      try {
-        $pdo->prepare("DELETE FROM cat_ubicaciones WHERE id=:id")->execute([':id'=>$id]);
-        flash_set('ok','Ubicación eliminada');
-      } catch (PDOException $e) {
-        flash_set('ok','No se puede eliminar: está en uso por productos.');
-      }
+
+    if ($id <= 0) {
+      if ($is_ajax) ajax_response(false,'ID inválido');
+      flash_set('ok','ID inválido');
     }
-    header('Location: ../index.php?tab=cubi#cubi', true, 303); exit;
+
+    try {
+      $pdo->prepare(
+        "DELETE FROM cat_ubicaciones WHERE id=:id"
+      )->execute([':id'=>$id]);
+
+      if ($is_ajax) ajax_response(true,'Ubicación eliminada');
+
+      flash_set('ok','Ubicación eliminada');
+
+    } catch (PDOException $e) {
+
+      if ($is_ajax) {
+        ajax_response(false,'No se puede eliminar: está en uso por productos.');
+      }
+
+      flash_set('ok','No se puede eliminar: está en uso por productos.');
+    }
+
+    header('Location: ../index.php?tab=cubi#cubi', true, 303);
+    exit;
   }
 }
 
-$rows = $pdo->query("SELECT * FROM cat_ubicaciones ORDER BY nombre")->fetchAll();
+// ================= GET =================
+$rows = $pdo->query(
+  "SELECT * FROM cat_ubicaciones ORDER BY nombre"
+)->fetchAll();
+
 ?>
 
 <!-- Formulario de agregar -->
@@ -119,10 +189,10 @@ $rows = $pdo->query("SELECT * FROM cat_ubicaciones ORDER BY nombre")->fetchAll()
               <td class="text-center">
                   <div class="d-flex gap-2 justify-content-center">
                     <button class="btn btn-sm btn-primary">
-                      <i class="bi bi-check-lg"></i> Guardar
+                      <i class="bi bi-check-lg"></i> 
                     </button>
                     <a class="btn btn-sm btn-secondary" href="index.php?tab=cubi#cubi">
-                      <i class="bi bi-x-lg"></i> Cancelar
+                      <i class="bi bi-x-lg"></i> 
                     </a>
                   </div>
                 </form>
