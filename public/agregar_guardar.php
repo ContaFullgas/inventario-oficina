@@ -38,10 +38,88 @@ if (!empty($_FILES['imagen']['name'])) {
   } else {
     $imgName = uniqid('img_', true).'.'.$ext;
     $dest = __DIR__.'/../uploads/'.$imgName;
+    // if (!is_dir(__DIR__.'/../uploads')) {
+    //   @mkdir(__DIR__.'/../uploads', 0775, true);
+    // }
+    // move_uploaded_file($_FILES['imagen']['tmp_name'], $dest);
     if (!is_dir(__DIR__.'/../uploads')) {
-      @mkdir(__DIR__.'/../uploads', 0775, true);
+        @mkdir(__DIR__.'/../uploads', 0775, true);
     }
-    move_uploaded_file($_FILES['imagen']['tmp_name'], $dest);
+
+    if (!is_dir(__DIR__.'/../uploads/thumbs')) {
+        @mkdir(__DIR__.'/../uploads/thumbs', 0775, true);
+    }
+
+    if (move_uploaded_file($_FILES['imagen']['tmp_name'], $dest)) {
+
+        // Crear thumbnail 150x150
+        try {
+
+            $thumbPath =
+                __DIR__.'/../uploads/thumbs/'.
+                pathinfo($imgName, PATHINFO_FILENAME).
+                '.png';
+
+            switch ($ext) {
+
+                case 'jpg':
+                case 'jpeg':
+                    $src = imagecreatefromjpeg($dest);
+                    break;
+
+                case 'png':
+                    $src = imagecreatefrompng($dest);
+                    break;
+
+                case 'webp':
+                    $src = imagecreatefromwebp($dest);
+                    break;
+
+                default:
+                    $src = false;
+            }
+
+            if ($src) {
+
+                $origW = imagesx($src);
+                $origH = imagesy($src);
+
+                $thumbSize = 150;
+
+                $ratio = min(
+                    $thumbSize / $origW,
+                    $thumbSize / $origH
+                );
+
+                $newW = max(1, (int)($origW * $ratio));
+                $newH = max(1, (int)($origH * $ratio));
+
+                $thumb = imagecreatetruecolor($newW, $newH);
+
+                imagecopyresampled(
+                    $thumb,
+                    $src,
+                    0, 0, 0, 0,
+                    $newW,
+                    $newH,
+                    $origW,
+                    $origH
+                );
+
+                imagepng($thumb, $thumbPath, 8);
+
+                imagedestroy($src);
+                imagedestroy($thumb);
+            }
+
+        } catch (Throwable $e) {
+
+            error_log(
+                'Error creando thumbnail: '
+                . $e->getMessage()
+            );
+        }
+    }
   }
 }
 

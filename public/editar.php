@@ -1,6 +1,11 @@
 <?php
 
 //Archivo editar.php
+/*
+ * Código legado.
+ * Actualmente las ediciones se procesan vía AJAX
+ * en ajax/editar_item.php.
+ */
 
 ob_start();
 require_once __DIR__.'/../config/db.php';

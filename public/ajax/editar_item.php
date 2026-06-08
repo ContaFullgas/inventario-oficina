@@ -48,19 +48,151 @@ if ($max_stock < $min_stock)
 $imgName = $item['imagen'];
 
 if (!empty($_FILES['imagen']['name'])) {
-  $ext = strtolower(pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION));
-  if (!in_array($ext, ['jpg','jpeg','png','webp'])) {
-    $errors[] = 'Formato de imagen no permitido';
-  } elseif ($_FILES['imagen']['error'] !== UPLOAD_ERR_OK) {
-    $errors[] = 'Error al subir la imagen';
-  } else {
-    if ($imgName) {
-      $old = __DIR__.'/../../uploads/'.$imgName;
-      if (is_file($old)) @unlink($old);
+
+    $ext = strtolower(
+        pathinfo(
+            $_FILES['imagen']['name'],
+            PATHINFO_EXTENSION
+        )
+    );
+
+    if (!in_array($ext, ['jpg','jpeg','png','webp'])) {
+
+        $errors[] = 'Formato de imagen no permitido';
+
+    } elseif ($_FILES['imagen']['error'] !== UPLOAD_ERR_OK) {
+
+        $errors[] = 'Error al subir la imagen';
+
+    } else {
+
+        if ($imgName) {
+
+            $oldImg =
+                __DIR__.'/../../uploads/'.
+                $imgName;
+
+            if (is_file($oldImg)) {
+                @unlink($oldImg);
+            }
+
+            $oldThumb =
+                __DIR__.'/../../uploads/thumbs/'.
+                pathinfo($imgName, PATHINFO_FILENAME).
+                '.png';
+
+            if (is_file($oldThumb)) {
+                @unlink($oldThumb);
+            }
+        }
+
+        $imgName =
+            uniqid('img_', true).
+            '.'.
+            $ext;
+
+        $dest =
+            __DIR__.'/../../uploads/'.
+            $imgName;
+
+        if (move_uploaded_file(
+            $_FILES['imagen']['tmp_name'],
+            $dest
+        )) {
+
+            try {
+
+                $thumbDir =
+                    __DIR__.'/../../uploads/thumbs';
+
+                if (!is_dir($thumbDir)) {
+                    mkdir($thumbDir, 0775, true);
+                }
+
+                switch ($ext) {
+
+                    case 'jpg':
+                    case 'jpeg':
+                        $src = imagecreatefromjpeg($dest);
+                        break;
+
+                    case 'png':
+                        $src = imagecreatefrompng($dest);
+                        break;
+
+                    case 'webp':
+                        $src = imagecreatefromwebp($dest);
+                        break;
+
+                    default:
+                        $src = false;
+                }
+
+                if ($src !== false) {
+
+                    $origW = imagesx($src);
+                    $origH = imagesy($src);
+
+                    $thumbSize = 150;
+
+                    $ratio = min(
+                        $thumbSize / $origW,
+                        $thumbSize / $origH
+                    );
+
+                    $newW = max(
+                        1,
+                        (int)($origW * $ratio)
+                    );
+
+                    $newH = max(
+                        1,
+                        (int)($origH * $ratio)
+                    );
+
+                    $thumb =
+                        imagecreatetruecolor(
+                            $newW,
+                            $newH
+                        );
+
+                    imagecopyresampled(
+                        $thumb,
+                        $src,
+                        0,
+                        0,
+                        0,
+                        0,
+                        $newW,
+                        $newH,
+                        $origW,
+                        $origH
+                    );
+
+                    imagepng(
+                        $thumb,
+                        $thumbDir.'/'.
+                        pathinfo(
+                            $imgName,
+                            PATHINFO_FILENAME
+                        ).
+                        '.png',
+                        8
+                    );
+
+                    imagedestroy($src);
+                    imagedestroy($thumb);
+                }
+
+            } catch (Throwable $e) {
+
+                error_log(
+                    'Error creando thumbnail: '.
+                    $e->getMessage()
+                );
+            }
+        }
     }
-    $imgName = uniqid('img_', true).'.'.$ext;
-    move_uploaded_file($_FILES['imagen']['tmp_name'], __DIR__.'/../../uploads/'.$imgName);
-  }
 }
 
 if ($errors) {

@@ -157,101 +157,101 @@ try {
 // -----------------------------
 $uploads = realpath(__DIR__ . '/../uploads') ?: (__DIR__ . '/../uploads');
 $thumbs_dir = rtrim($uploads, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'thumbs';
-$temporaryFiles = []; // temporales creados en esta ejecución
-$maxSide = 80; // px, ajusta a 60/50 si necesitas aún menor uso
+// $temporaryFiles = []; // temporales creados en esta ejecución
+// $maxSide = 80; // px, ajusta a 60/50 si necesitas aún menor uso
 
 // -----------------------------
 // Función: PRIMERO GD, luego Imagick si GD no disponible
 // -----------------------------
-function create_thumb_temp($srcPath, $maxSide) {
-    $tmpPng = false;
+// function create_thumb_temp($srcPath, $maxSide) {
+//     $tmpPng = false;
 
-    // Intentar GD primero
-    if (extension_loaded('gd')) {
-        try {
-            $info = @getimagesize($srcPath);
-            if ($info === false) throw new Exception("getimagesize falló");
-            $origW = $info[0]; $origH = $info[1];
-            $mime = $info['mime'] ?? '';
-            switch ($mime) {
-                case 'image/jpeg': $srcImg = @imagecreatefromjpeg($srcPath); break;
-                case 'image/png':  $srcImg = @imagecreatefrompng($srcPath); break;
-                case 'image/gif':  $srcImg = @imagecreatefromgif($srcPath); break;
-                default: $srcImg = false; break;
-            }
-            if ($srcImg === false) throw new Exception("GD no soporta el formato: $mime");
-            if ($origW > $origH) { $newW = $maxSide; $newH = intval($origH * ($maxSide / $origW)); }
-            else { $newH = $maxSide; $newW = intval($origW * ($maxSide / $origH)); }
-            if ($newW < 1) $newW = 1; if ($newH < 1) $newH = 1;
-            $thumb = imagecreatetruecolor($newW, $newH);
-            $white = imagecolorallocate($thumb, 255,255,255);
-            imagefill($thumb, 0,0, $white);
-            imagecopyresampled($thumb, $srcImg, 0,0,0,0, $newW, $newH, $origW, $origH);
-            $tmp = tempnam(sys_get_temp_dir(), 'inv_tmb_');
-            if ($tmp === false) { imagedestroy($srcImg); imagedestroy($thumb); throw new Exception("tempnam falló"); }
-            $tmpPng = $tmp . '.png';
-            imagepng($thumb, $tmpPng, 6);
-            imagedestroy($srcImg);
-            imagedestroy($thumb);
-            if (file_exists($tmp)) @unlink($tmp);
-            gc_collect_cycles();
-            return $tmpPng;
-        } catch (Exception $e) {
-            error_log("[create_thumb_temp] GD falló para $srcPath: " . $e->getMessage());
-            if (isset($srcImg) && is_resource($srcImg)) @imagedestroy($srcImg);
-            if (isset($thumb) && is_resource($thumb)) @imagedestroy($thumb);
-            if ($tmpPng && is_file($tmpPng)) @unlink($tmpPng);
-            gc_collect_cycles();
-        }
-    }
+//     // Intentar GD primero
+//     if (extension_loaded('gd')) {
+//         try {
+//             $info = @getimagesize($srcPath);
+//             if ($info === false) throw new Exception("getimagesize falló");
+//             $origW = $info[0]; $origH = $info[1];
+//             $mime = $info['mime'] ?? '';
+//             switch ($mime) {
+//                 case 'image/jpeg': $srcImg = @imagecreatefromjpeg($srcPath); break;
+//                 case 'image/png':  $srcImg = @imagecreatefrompng($srcPath); break;
+//                 case 'image/gif':  $srcImg = @imagecreatefromgif($srcPath); break;
+//                 default: $srcImg = false; break;
+//             }
+//             if ($srcImg === false) throw new Exception("GD no soporta el formato: $mime");
+//             if ($origW > $origH) { $newW = $maxSide; $newH = intval($origH * ($maxSide / $origW)); }
+//             else { $newH = $maxSide; $newW = intval($origW * ($maxSide / $origH)); }
+//             if ($newW < 1) $newW = 1; if ($newH < 1) $newH = 1;
+//             $thumb = imagecreatetruecolor($newW, $newH);
+//             $white = imagecolorallocate($thumb, 255,255,255);
+//             imagefill($thumb, 0,0, $white);
+//             imagecopyresampled($thumb, $srcImg, 0,0,0,0, $newW, $newH, $origW, $origH);
+//             $tmp = tempnam(sys_get_temp_dir(), 'inv_tmb_');
+//             if ($tmp === false) { imagedestroy($srcImg); imagedestroy($thumb); throw new Exception("tempnam falló"); }
+//             $tmpPng = $tmp . '.png';
+//             imagepng($thumb, $tmpPng, 6);
+//             imagedestroy($srcImg);
+//             imagedestroy($thumb);
+//             if (file_exists($tmp)) @unlink($tmp);
+//             gc_collect_cycles();
+//             return $tmpPng;
+//         } catch (Exception $e) {
+//             error_log("[create_thumb_temp] GD falló para $srcPath: " . $e->getMessage());
+//             if (isset($srcImg) && is_resource($srcImg)) @imagedestroy($srcImg);
+//             if (isset($thumb) && is_resource($thumb)) @imagedestroy($thumb);
+//             if ($tmpPng && is_file($tmpPng)) @unlink($tmpPng);
+//             gc_collect_cycles();
+//         }
+//     }
 
-    // Fallback Imagick
-    if (extension_loaded('imagick')) {
-        $im = null;
-        try {
-            $im = new Imagick();
-            if (defined('Imagick::RESOURCETYPE_MEMORY')) {
-                $im->setResourceLimit(Imagick::RESOURCETYPE_MEMORY, 48 * 1024 * 1024);
-                $im->setResourceLimit(Imagick::RESOURCETYPE_MAP,    96 * 1024 * 1024);
-                $im->setResourceLimit(Imagick::RESOURCETYPE_DISK,   128 * 1024 * 1024);
-                $im->setResourceLimit(Imagick::RESOURCETYPE_THREADS,1);
-            }
-            $im->readImage($srcPath);
-            if ($im->getImageAlphaChannel()) {
-                $bg = new Imagick();
-                $bg->newImage($im->getImageWidth(), $im->getImageHeight(), 'white');
-                $bg->compositeImage($im, Imagick::COMPOSITE_DEFAULT, 0,0);
-                $im->clear(); $im->destroy();
-                $im = $bg;
-            }
-            $im->thumbnailImage($maxSide, $maxSide, true, true);
-            $im->setImageFormat('png');
-            $tmp = tempnam(sys_get_temp_dir(), 'inv_tmb_');
-            if ($tmp === false) throw new Exception("tempnam falló");
-            $tmpPng = $tmp . '.png';
-            if (!$im->writeImage($tmpPng)) {
-                if (file_exists($tmpPng)) @unlink($tmpPng);
-                if (file_exists($tmp)) @unlink($tmp);
-                throw new Exception("no se pudo escribir tmp png");
-            }
-            if (file_exists($tmp)) @unlink($tmp);
-            $im->clear(); $im->destroy();
-            unset($im);
-            gc_collect_cycles();
-            return $tmpPng;
-        } catch (Exception $e) {
-            error_log("[create_thumb_temp] Imagick falló para $srcPath: " . $e->getMessage());
-            if (is_object($im)) { try { $im->clear(); $im->destroy(); } catch (Throwable $_) {} }
-            if ($tmpPng && is_file($tmpPng)) @unlink($tmpPng);
-            unset($im);
-            gc_collect_cycles();
-            return false;
-        }
-    }
+//     // Fallback Imagick
+//     if (extension_loaded('imagick')) {
+//         $im = null;
+//         try {
+//             $im = new Imagick();
+//             if (defined('Imagick::RESOURCETYPE_MEMORY')) {
+//                 $im->setResourceLimit(Imagick::RESOURCETYPE_MEMORY, 48 * 1024 * 1024);
+//                 $im->setResourceLimit(Imagick::RESOURCETYPE_MAP,    96 * 1024 * 1024);
+//                 $im->setResourceLimit(Imagick::RESOURCETYPE_DISK,   128 * 1024 * 1024);
+//                 $im->setResourceLimit(Imagick::RESOURCETYPE_THREADS,1);
+//             }
+//             $im->readImage($srcPath);
+//             if ($im->getImageAlphaChannel()) {
+//                 $bg = new Imagick();
+//                 $bg->newImage($im->getImageWidth(), $im->getImageHeight(), 'white');
+//                 $bg->compositeImage($im, Imagick::COMPOSITE_DEFAULT, 0,0);
+//                 $im->clear(); $im->destroy();
+//                 $im = $bg;
+//             }
+//             $im->thumbnailImage($maxSide, $maxSide, true, true);
+//             $im->setImageFormat('png');
+//             $tmp = tempnam(sys_get_temp_dir(), 'inv_tmb_');
+//             if ($tmp === false) throw new Exception("tempnam falló");
+//             $tmpPng = $tmp . '.png';
+//             if (!$im->writeImage($tmpPng)) {
+//                 if (file_exists($tmpPng)) @unlink($tmpPng);
+//                 if (file_exists($tmp)) @unlink($tmp);
+//                 throw new Exception("no se pudo escribir tmp png");
+//             }
+//             if (file_exists($tmp)) @unlink($tmp);
+//             $im->clear(); $im->destroy();
+//             unset($im);
+//             gc_collect_cycles();
+//             return $tmpPng;
+//         } catch (Exception $e) {
+//             error_log("[create_thumb_temp] Imagick falló para $srcPath: " . $e->getMessage());
+//             if (is_object($im)) { try { $im->clear(); $im->destroy(); } catch (Throwable $_) {} }
+//             if ($tmpPng && is_file($tmpPng)) @unlink($tmpPng);
+//             unset($im);
+//             gc_collect_cycles();
+//             return false;
+//         }
+//     }
 
-    error_log("[create_thumb_temp] Ni GD ni Imagick disponibles/útiles para $srcPath");
-    return false;
-}
+//     error_log("[create_thumb_temp] Ni GD ni Imagick disponibles/útiles para $srcPath");
+//     return false;
+// }
 
 // -----------------------------
 // Preparar PDF con FPDF
@@ -318,14 +318,6 @@ if (empty($items)) {
             $pref_thumb = $thumbs_dir . DIRECTORY_SEPARATOR . pathinfo($it['imagen'], PATHINFO_FILENAME) . '.png';
             if (is_file($pref_thumb) && is_readable($pref_thumb)) {
                 $thumbFile = $pref_thumb;
-            } elseif (is_file($candidate) && is_readable($candidate)) {
-                $tmp = create_thumb_temp($candidate, $maxSide);
-                if ($tmp !== false && is_file($tmp) && is_readable($tmp)) {
-                    $thumbFile = $tmp;
-                    $temporaryFiles[] = $tmp;
-                } else {
-                    $thumbFile = '';
-                }
             } else {
                 $thumbFile = '';
             }
@@ -380,12 +372,12 @@ if ($page === $totalPages) {
 }
 
 // limpiar temporales creados en esta ejecución
-if (!empty($temporaryFiles)) {
-    foreach ($temporaryFiles as $tf) {
-        if (is_file($tf)) @unlink($tf);
-    }
-    error_log("[inventario_pdf_split_thumbs_final] temporales eliminados: " . count($temporaryFiles));
-}
+// if (!empty($temporaryFiles)) {
+//     foreach ($temporaryFiles as $tf) {
+//         if (is_file($tf)) @unlink($tf);
+//     }
+//     error_log("[inventario_pdf_split_thumbs_final] temporales eliminados: " . count($temporaryFiles));
+// }
 
 $pdf->Ln(4);
 $pdf->SetFont('Arial','I',8);
