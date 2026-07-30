@@ -99,56 +99,52 @@ function buildUrlMM($params) {
 
 <style>
 .minmax-container {
-  background: #f8f9fa;
-  padding: 2rem;
-  border-radius: 12px;
+  padding: 0;
 }
 
-.filter-bar {
+#minmax-form {
   background: white;
   padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   margin-bottom: 2rem;
 }
 
+.capsule-focus:focus-within {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.25) !important;
+  background-color: #ffffff !important;
+}
+
+.capsule-focus:focus-within i {
+  color: var(--primary) !important;
+}
+
 .filter-select-wrapper {
-  position: relative;
   flex: 1;
   max-width: 400px;
 }
 
 .filter-select {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 3rem;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  background: white;
+  border: none;
+  background: transparent;
   cursor: pointer;
-  transition: all 0.3s ease;
+  box-shadow: none !important;
 }
 
 .filter-select:focus {
-  border-color: #f39c12;
   outline: none;
-  box-shadow: 0 0 0 0.2rem rgba(243,156,18,0.15);
 }
 
 .filter-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #ffc107;
-  font-size: 1.2rem;
+  color: var(--text-muted);
 }
 
-.btn-clean {
+#minmax-form .btn {
+  border-radius: 10px;
   padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.3s;
+  font-weight: 600;
+  transition: all 0.3s ease;
   border: none;
 }
 
@@ -168,9 +164,14 @@ function buildUrlMM($params) {
   margin: 0;
 }
 
+/* Encabezado de tabla verde sólido siempre (mismo patrón que Inventario: ID + !important) */
+#tabla-minmax thead,
+#tabla-minmax thead th {
+  background: #2abb4f !important;
+  color: white !important;
+}
+
 .items-table thead {
-  background: linear-gradient(135deg, #f4d03f 0%, #f39c12 100%);
-  color: white;
   border-bottom: 2px solid #dee2e6;
 }
 
@@ -196,7 +197,7 @@ function buildUrlMM($params) {
   width: 60px;
   height: 60px;
   border-radius: 8px;
-  border: 3px solid #ffc107;
+  border: 3px solid #2abb4f;
   object-fit: cover;
   background: #f8f9fa;
 }
@@ -259,7 +260,7 @@ function buildUrlMM($params) {
 }
 
 .tag-badge i {
-  color: #f39c12;
+  color: #2abb4f;
 }
 
 .condition-badge {
@@ -274,7 +275,7 @@ function buildUrlMM($params) {
 }
 
 .condition-badge i {
-  color: #f39c12;
+  color: #2abb4f;
 }
 
 .row-reponer {
@@ -325,7 +326,7 @@ function buildUrlMM($params) {
   padding: 0.5rem 1rem;
   border-radius: 10px;
   font-weight: 600;
-  color: #f39c12;
+  color: #2abb4f;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -355,7 +356,7 @@ function buildUrlMM($params) {
 }
 
 .per-page-selector select:focus {
-  border-color: #f39c12;
+  border-color: #2abb4f;
   outline: none;
   box-shadow: 0 0 0 0.2rem rgba(243,156,18,0.15);
 }
@@ -383,17 +384,17 @@ function buildUrlMM($params) {
 }
 
 .pagination-btn:hover:not(.disabled) {
-  background: linear-gradient(135deg, #f4d03f 0%, #f39c12 100%);
+  background: linear-gradient(135deg, #2abb4f 0%, #2abb4f 100%);
   color: white;
-  border-color: #f39c12;
+  border-color: #2abb4f;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(243,156,18,0.3);
 }
 
 .pagination-btn.active {
-  background: linear-gradient(135deg, #f4d03f 0%, #f39c12 100%);
+  background: linear-gradient(135deg, #2abb4f 0%, #2abb4f 100%);
   color: white;
-  border-color: #f39c12;
+  border-color: #2abb4f;
   box-shadow: 0 4px 12px rgba(243,156,18,0.3);
 }
 
@@ -449,6 +450,151 @@ function buildUrlMM($params) {
     justify-content: center;
   }
 }
+
+/* ==========================================================================
+   MODO OSCURO (min/max)
+   ========================================================================== */
+
+body.dark-mode #minmax-form,
+body.dark-mode .items-table-wrapper,
+body.dark-mode .pagination-wrapper {
+    background: var(--bg-card);
+}
+
+/* Quitar cualquier borde/sombra residual entre columnas del encabezado */
+body.dark-mode .items-table {
+    border-collapse: collapse;
+}
+
+body.dark-mode .items-table thead th {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Encabezado de la tabla en modo oscuro: mismo patrón que Inventario (ID + !important) */
+body.dark-mode #tabla-minmax thead,
+body.dark-mode #tabla-minmax thead th {
+    background: #2abb4f !important;
+    color: white !important;
+}
+
+body.dark-mode #tabla-minmax thead th i {
+    color: white !important;
+}
+
+
+body.dark-mode .items-table thead {
+    border-bottom-color: var(--border-color) !important;
+}
+
+body.dark-mode .rotacion-wrapper .items-table thead {
+    border-bottom-color: var(--border-color) !important;
+}
+
+
+/* Filtro (cápsula bg-light) */
+body.dark-mode #minmax-form .bg-light,
+body.dark-mode #minmax-form .capsule-focus {
+    background-color: var(--bg-body) !important;
+}
+
+body.dark-mode .filter-select,
+body.dark-mode .filter-select option {
+    color: var(--text-main) !important;
+    background: var(--bg-card);
+}
+
+body.dark-mode .filter-icon,
+body.dark-mode #minmax-form .text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* El botón "Limpiar" mantiene fondo blanco fijo; necesita texto oscuro, no el gris pensado para fondo oscuro */
+body.dark-mode #minmax-form .btn-clean {
+    color: #495057 !important;
+}
+
+/* Anular el fondo blanco que Bootstrap pone a la tabla vía variables CSS */
+body.dark-mode .items-table {
+    --bs-table-bg: transparent;
+    --bs-table-striped-bg: transparent;
+    --bs-table-hover-bg: rgba(243, 156, 18, 0.08);
+    --bs-table-hover-color: var(--text-main);
+    --bs-table-color: var(--text-main);
+    --bs-table-border-color: var(--border-color);
+    background-color: transparent;
+    color: var(--text-main);
+}
+
+body.dark-mode .items-table tbody td {
+    border-bottom-color: var(--border-color);
+    color: var(--text-main);
+}
+
+body.dark-mode .item-name {
+    color: var(--text-dark) !important;
+}
+
+body.dark-mode .stock-number {
+    color: var(--text-dark) !important;
+}
+
+body.dark-mode .tag-badge,
+body.dark-mode .condition-badge {
+    background: var(--bg-body);
+    color: var(--text-main);
+}
+
+/* Filas: neutralizamos el color de fondo por estado (solo el badge de Estado debe llevar color) */
+body.dark-mode .items-table tbody tr.row-reponer,
+body.dark-mode .items-table tbody tr.row-reponer td,
+body.dark-mode .items-table tbody tr.row-bajo,
+body.dark-mode .items-table tbody tr.row-bajo td,
+body.dark-mode .items-table tbody tr.row-ok,
+body.dark-mode .items-table tbody tr.row-ok td {
+    background: transparent !important;
+}
+
+body.dark-mode .items-table tbody tr:hover td {
+    background: rgba(243, 156, 18, 0.08) !important;
+}
+/* Paginación (mismos nombres de clase que en Inventario) */
+body.dark-mode .pagination-info,
+body.dark-mode .per-page-selector label {
+    color: var(--text-main);
+}
+
+body.dark-mode .per-page-selector select {
+    background: var(--bg-body);
+    color: var(--text-main);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .per-page-selector select option {
+    background: var(--bg-card);
+    color: var(--text-main);
+}
+
+body.dark-mode .pagination-btn {
+    background: var(--bg-body);
+    color: var(--text-main);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .pagination-btn:hover:not(.disabled) {
+    background: linear-gradient(135deg, #2abb4f 0%, #2abb4f 100%);
+    color: white;
+}
+
+body.dark-mode .pagination-btn.active {
+    color: white;
+}
+
+body.dark-mode .pagination-info .results-count {
+    background: rgba(243, 156, 18, 0.12);
+    color: #2abb4f;
+}
+
 </style>
 
 <div class="minmax-container">
@@ -458,43 +604,53 @@ function buildUrlMM($params) {
     <input type="hidden" name="page_mm" value="1">
     <input type="hidden" name="per_page_mm" value="<?=$items_por_pagina?>">
     
-    <div class="filter-bar">
-      <div class="d-flex gap-3 align-items-center flex-wrap">
-        <div class="filter-select-wrapper">
+    <div class="row g-3 align-items-center mb-3">
+      <div class="col-12 col-md-6 col-lg-5">
+        <div class="d-flex align-items-center bg-light border rounded-pill px-3 py-1 capsule-focus filter-select-wrapper"
+          style="border-color: var(--border-color) !important; transition: all 0.2s;">
           <i class="bi bi-funnel-fill filter-icon"></i>
-          <select name="estado" class="filter-select">
+          <select name="estado" class="form-select border-0 bg-transparent shadow-none ms-2 text-muted filter-select">
             <option value="" <?= $estado===''?'selected':'' ?>>Todos los Estados</option>
             <option value="reponer" <?= $estado==='reponer'?'selected':'' ?>>🔴 Reponer</option>
             <option value="bajo" <?= $estado==='bajo'?'selected':'' ?>>🟡 Bajo</option>
             <option value="ok" <?= $estado==='ok'?'selected':'' ?>>🟢 OK</option>
           </select>
         </div>
-        <a class="btn btn-success btn-clean" href="index.php?tab=mm#mm">
-          <i class="bi bi-arrow-clockwise"></i> Limpiar
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 justify-content-end align-items-center pt-3 border-top">
+      <div class="d-flex flex-wrap gap-2">
+        <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm d-flex align-items-center gap-2"
+          style="background-color: var(--primary); border: none;">
+          <i class="bi bi-search"></i> Filtrar
+        </button>
+        <a class="btn btn-light border rounded-pill px-3 shadow-sm d-flex align-items-center gap-2 text-muted btn-clean"
+          href="index.php?tab=mm#mm">
+          <i class="fas fa-eraser"></i> Limpiar
         </a>
-        <!-- <button class="btn btn-danger"><i class="bi bi-file-earmark-arrow-down-fill"></i> Generar Requerimiento</button> -->
       </div>
     </div>
   </form>
 
   <!-- Tabla de Items -->
   <div class="items-table-wrapper">
-    <table class="items-table table table-hover">
-      <thead>
+    <table class="items-table table table-hover" id="tabla-minmax">
+      <thead style="background:#2abb4f !important;">
         <tr>
-          <th><i class="bi bi-box"></i> PRODUCTO</th>
-          <th><i class="bi bi-tag"></i> CLASE</th>
-          <th><i class="bi bi-geo-alt"></i> UBICACIÓN</th>
-          <th><i class="bi bi-shield-check"></i> CONDICIÓN</th>
-          <th><i class="bi bi-stack"></i> STOCK</th>
-          <th><i class="bi bi-graph-up"></i> ESTADO</th>
+          <th style="background:#2abb4f !important; color:#fff !important;"><i class="bi bi-box"></i> PRODUCTO</th>
+          <th style="background:#2abb4f !important; color:#fff !important;"><i class="bi bi-tag"></i> CLASE</th>
+          <th style="background:#2abb4f !important; color:#fff !important;"><i class="bi bi-geo-alt"></i> UBICACIÓN</th>
+          <th style="background:#2abb4f !important; color:#fff !important;"><i class="bi bi-shield-check"></i> CONDICIÓN</th>
+          <th style="background:#2abb4f !important; color:#fff !important;"><i class="bi bi-stack"></i> STOCK</th>
+          <th style="background:#2abb4f !important; color:#fff !important;"><i class="bi bi-graph-up"></i> ESTADO</th>
         </tr>
       </thead>
       <tbody>
         <?php if (empty($items)): ?>
         <tr>
           <td colspan="6" class="text-center py-5">
-            <div style="font-size: 3rem; color: #f39c12; margin-bottom: 1rem;">
+            <div style="font-size: 3rem; color: #2abb4f; margin-bottom: 1rem;">
               <i class="bi bi-inbox"></i>
             </div>
             <p class="text-muted mb-0">No se encontraron resultados</p>
@@ -665,4 +821,5 @@ function buildUrlMM($params) {
     });
   }
 })();
+
 </script>

@@ -42,6 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($nombre === '') $errors[] = 'El nombre es obligatorio';
 
+    if ($errors && $is_ajax) ajax_response(false, implode(' ', $errors));
+
     if (!$errors) {
       try {
         $pdo->prepare(
@@ -132,35 +134,33 @@ $rows = $pdo->query(
 
 ?>
 
-<!-- Formulario de agregar -->
-<form id="inventario-form" class="row g-3 mb-4" method="post" action="public/cat_ubicaciones.php">
-  <?=csrf_field()?>
-  <input type="hidden" name="accion_ubi" value="add">
-  
-  <div class="col-md-9">
-    <div class="input-group">
-      <label class="input-group-text text-white" style="background-color: #F59E0B;">
-        <i class="bi bi-geo-alt-fill"></i>
-      </label>
-      <input name="nombre" class="form-control" placeholder="Ubicación" required>
-    </div>
-  </div>
-  
-  <div class="col-md-3">
-    <button class="btn btn-success w-100">
-      <i class="bi bi-plus-lg"></i> Agregar
-    </button>
-  </div>
-</form>
+<style>
+body.dark-mode #modalAgregarUbicacion .text-dark {
+    color: var(--text-main) !important;
+}
 
-<?php if ($errors): ?>
+body.dark-mode #modalAgregarUbicacion .btn-light {
+    background-color: var(--bg-body) !important;
+    border-color: var(--border-color) !important;
+}
+</style>
+
+<div class="d-flex justify-content-end mb-3">
+  <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm d-flex align-items-center gap-2"
+    style="background-color: var(--primary); border: none;"
+    data-bs-toggle="modal" data-bs-target="#modalAgregarUbicacion">
+    <i class="bi bi-plus-lg"></i> Agregar Ubicación
+  </button>
+</div>
+
+<?php if ($errors && $edit_id): ?>
   <div class="alert alert-danger">
     <ul class="mb-0"><?php foreach($errors as $e): ?><li><?=h($e)?></li><?php endforeach; ?></ul>
   </div>
 <?php endif; ?>
 
 <div class="table-container">
-  <div class="items-table-wrapper table-responsive">
+  <div class="table-responsive">
     <table id="tabla-inventario" class="items-table table table-hover">
       <thead>
         <tr>
@@ -173,26 +173,24 @@ $rows = $pdo->query(
           <?php if ($edit_id === (int)$r['id']): ?>
             <tr>
               <td>
-                <form method="post" class="row g-2" action="public/cat_ubicaciones.php">
+                <form method="post" class="d-flex align-items-center gap-2 flex-wrap" action="public/cat_ubicaciones.php">
                   <?=csrf_field()?>
                   <input type="hidden" name="accion_ubi" value="upd">
                   <input type="hidden" name="id" value="<?=$r['id']?>">
-                  <div class="col-12">
-                    <div class="input-group">
-                      <label class="input-group-text text-white" style="background-color: #F59E0B;">
-                        <i class="bi bi-geo-alt-fill"></i>
-                      </label>
-                      <input name="nombre" class="form-control" required value="<?=h($r['nombre'])?>">
-                    </div>
+                  <div class="d-flex align-items-center bg-light border rounded-pill px-3 py-1 capsule-focus flex-grow-1"
+                    style="border-color: var(--border-color) !important; transition: all 0.2s; min-width: 200px;">
+                    <i class="bi bi-geo-alt-fill text-muted"></i>
+                    <input name="nombre" class="form-control border-0 bg-transparent shadow-none ms-2 text-dark"
+                      required value="<?=h($r['nombre'])?>">
                   </div>
               </td>
               <td class="text-center">
                   <div class="d-flex gap-2 justify-content-center">
-                    <button class="btn btn-sm btn-primary">
-                      <i class="bi bi-check-lg"></i> 
+                    <button class="btn btn-primary rounded-pill btn-sm px-3" style="background-color: var(--primary); border:none;">
+                      <i class="bi bi-check-lg"></i>
                     </button>
-                    <a class="btn btn-sm btn-secondary" href="index.php?tab=cubi#cubi">
-                      <i class="bi bi-x-lg"></i> 
+                    <a class="btn btn-light border rounded-pill btn-sm px-3 text-muted" href="index.php?tab=cubi#cubi">
+                      <i class="bi bi-x-lg"></i>
                     </a>
                   </div>
                 </form>
@@ -225,3 +223,99 @@ $rows = $pdo->query(
     </table>
   </div>
 </div>
+
+<!-- MODAL AGREGAR UBICACIÓN -->
+<div class="modal fade" id="modalAgregarUbicacion" tabindex="-1" aria-labelledby="modalAgregarUbicacionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+
+      <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-3" id="modalAgregarUbicacionLabel">
+          <div class="text-primary rounded-circle d-flex align-items-center justify-content-center"
+            style="width: 45px; height: 45px; background-color: var(--primary-light);">
+            <i class="bi bi-geo-alt-fill fs-5"></i>
+          </div>
+          Nueva Ubicación
+        </h5>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body p-4 pt-3">
+        <form id="formAgregarUbicacion" method="post" action="public/cat_ubicaciones.php" class="row g-3">
+          <?=csrf_field()?>
+          <input type="hidden" name="accion_ubi" value="add">
+
+          <div class="col-12">
+            <label class="custom-form-label"><i class="bi bi-geo-alt-fill text-primary"></i> Nombre de la ubicación
+              <span class="text-danger">*</span></label>
+            <input type="text" name="nombre" class="form-control custom-input"
+              placeholder="Ej. Almacén A, Estante 3" required>
+          </div>
+
+          <div class="col-12">
+            <div class="alert alert-danger d-none mb-0" id="ubiAddError" role="alert">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span id="ubiAddErrorText"></span>
+            </div>
+          </div>
+
+          <div class="col-12 pt-3 border-top mt-3 d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light border rounded-pill px-4 fw-medium text-muted"
+              data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="submit"
+              class="btn rounded-pill px-4 fw-semibold shadow-sm d-flex align-items-center gap-2 text-white"
+              style="background-color: var(--primary); border: none; transition: transform 0.2s;"
+              onmouseover="this.style.transform='translateY(-2px)'"
+              onmouseout="this.style.transform='translateY(0)'">
+              <i class="bi bi-plus-lg"></i> Agregar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const modalEl = document.getElementById('modalAgregarUbicacion');
+  const form = document.getElementById('formAgregarUbicacion');
+  const errBox = document.getElementById('ubiAddError');
+  const errText = document.getElementById('ubiAddErrorText');
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    errBox.classList.add('d-none');
+
+    const data = new FormData(form);
+
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: data,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      const json = await res.json();
+
+      if (!json.ok) {
+        errText.innerText = json.message || 'No se pudo agregar';
+        errBox.classList.remove('d-none');
+        return;
+      }
+
+      window.location.reload();
+
+    } catch (err) {
+      errText.innerText = 'Error de conexión al guardar';
+      errBox.classList.remove('d-none');
+    }
+  });
+
+  modalEl.addEventListener('hidden.bs.modal', function() {
+    form.reset();
+    errBox.classList.add('d-none');
+  });
+})();
+</script>

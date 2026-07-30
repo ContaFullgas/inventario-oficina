@@ -18,15 +18,6 @@ $is_admin = auth_is_admin();
 $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
-// Helper JSON
-// if (!function_exists('ajax_response')) {
-//   function ajax_response(bool $ok, string $message = ''): void {
-//     echo json_encode(['ok'=>$ok,'message'=>$message]);
-//     exit;
-//   }
-// }
-
-
 // Bloquear POST si no es admin
 if (!$is_admin && $_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($is_ajax) ajax_response(false,'Sin permisos');
@@ -49,6 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = trim($_POST['nombre'] ?? '');
 
     if ($nombre === '') $errors[] = 'El nombre es obligatorio';
+
+    if ($errors && $is_ajax) ajax_response(false, implode(' ', $errors));
 
     if (!$errors) {
       try {
@@ -144,9 +137,19 @@ $rows = $pdo->query(
 #inventario-form {
   background: white;
   padding: 1.5rem;
-  /*border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);*/
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   margin-bottom: 2rem;
+}
+
+.capsule-focus:focus-within {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.25) !important;
+  background-color: #ffffff !important;
+}
+
+.capsule-focus:focus-within i {
+  color: var(--primary) !important;
 }
 
 #inventario-form .input-group-text {
@@ -307,14 +310,6 @@ $rows = $pdo->query(
   }
 }
 
-/* items tables */
-.items-table-wrapper {
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
 .items-table {
   margin: 0;
 }
@@ -386,36 +381,44 @@ $rows = $pdo->query(
   vertical-align: middle;
   border: none;
 }
+
+/* ==========================================================================
+   MODO OSCURO (condiciones)
+   ========================================================================== */
+
+/* Este archivo redefine el título del modal de eliminar con un color propio;
+   forzamos legibilidad sin importar qué <style> gane la cascada */
+body.dark-mode #deleteModal .modal-title {
+    color: var(--text-dark) !important;
+}
+
+/* Modal "Nueva Condición/Estado" */
+body.dark-mode #modalAgregarCondicion .text-dark {
+    color: var(--text-main) !important;
+}
+
+body.dark-mode #modalAgregarCondicion .btn-light {
+    background-color: var(--bg-body) !important;
+    border-color: var(--border-color) !important;
+}
+
 </style>
 
-<!-- Formulario de agregar -->
-<form id="inventario-form" class="row g-3 mb-4" method="post" action="public/cat_condiciones.php">
-  <?=csrf_field()?>
-  <input type="hidden" name="accion_cond" value="add">
-  
-  <div class="col-md-9">
-    <div class="input-group">
-      <label class="input-group-text text-white" style="background-color: #F59E0B;">
-        <i class="bi bi-check-circle-fill"></i>
-      </label>
-      <input name="nombre" class="form-control" placeholder="Condición/Estado" required>
-    </div>
-  </div>
-  
-  <div class="col-md-3">
-    <button class="btn btn-success w-100">
-      <i class="bi bi-plus-lg"></i> Agregar
-    </button>
-  </div>
-</form>
+<div class="d-flex justify-content-end mb-3">
+  <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm d-flex align-items-center gap-2"
+    style="background-color: var(--primary); border: none;"
+    data-bs-toggle="modal" data-bs-target="#modalAgregarCondicion">
+    <i class="bi bi-plus-lg"></i> Agregar Condición
+  </button>
+</div>
 
-<?php if ($errors): ?>
+<?php if ($errors && $edit_id): ?>
   <div class="alert alert-danger">
     <ul class="mb-0"><?php foreach($errors as $e): ?><li><?=h($e)?></li><?php endforeach; ?></ul>
   </div>
 <?php endif; ?>
 <div class="table-container">
-  <div class="items-table-wrapper table-responsive">
+  <div class="table-responsive">
     <table class="items-table table table-hover" id="tabla-inventario">
       <thead>
         <tr>
@@ -430,25 +433,23 @@ $rows = $pdo->query(
           <?php if ($edit_id === (int)$r['id']): ?>
             <tr>
               <td>
-                <form method="post" class="row g-2" action="public/cat_condiciones.php">
+                <form method="post" class="d-flex align-items-center gap-2 flex-wrap" action="public/cat_condiciones.php">
                   <?=csrf_field()?>
                   <input type="hidden" name="accion_cond" value="upd">
                   <input type="hidden" name="id" value="<?=$r['id']?>">
-                  <div class="col-12">
-                    <div class="input-group">
-                      <label class="input-group-text text-white" style="background-color: #F59E0B;">
-                        <i class="bi bi-check-circle-fill"></i>
-                      </label>
-                      <input name="nombre" class="form-control" required value="<?=h($r['nombre'])?>">
-                    </div>
+                  <div class="d-flex align-items-center bg-light border rounded-pill px-3 py-1 capsule-focus flex-grow-1"
+                    style="border-color: var(--border-color) !important; transition: all 0.2s; min-width: 200px;">
+                    <i class="bi bi-check-circle-fill text-muted"></i>
+                    <input name="nombre" class="form-control border-0 bg-transparent shadow-none ms-2 text-dark"
+                      required value="<?=h($r['nombre'])?>">
                   </div>
               </td>
               <td class="text-center">
                   <div class="d-flex gap-2 justify-content-center">
-                    <button class="btn btn-sm btn-primary">
+                    <button class="btn btn-primary rounded-pill btn-sm px-3" style="background-color: var(--primary); border:none;">
                       <i class="bi bi-check-lg"></i>
                     </button>
-                    <a class="btn btn-sm btn-secondary" href="index.php?tab=ccond#ccond">
+                    <a class="btn btn-light border rounded-pill btn-sm px-3 text-muted" href="index.php?tab=ccond#ccond">
                       <i class="bi bi-x-lg"></i>
                     </a>
                   </div>
@@ -483,109 +484,98 @@ $rows = $pdo->query(
   </div>
 </div>
 
-<!-- Modal de Confirmación para Eliminar -->
-<!-- <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+<!-- MODAL AGREGAR CONDICIÓN/ESTADO -->
+<div class="modal fade" id="modalAgregarCondicion" tabindex="-1" aria-labelledby="modalAgregarCondicionLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header border-0">
-        <h5 class="modal-title d-flex align-items-center gap-2" id="deleteModalLabel">
-          <i class="bi bi-exclamation-triangle-fill text-danger"></i>
-          Confirmar Eliminación
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="text-center mb-3">
-          <div class="delete-icon-wrapper">
-            <i class="bi bi-trash-fill"></i>
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+
+      <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-3" id="modalAgregarCondicionLabel">
+          <div class="text-primary rounded-circle d-flex align-items-center justify-content-center"
+            style="width: 45px; height: 45px; background-color: var(--primary-light);">
+            <i class="bi bi-check-circle-fill fs-5"></i>
           </div>
-        </div>
-        <p class="text-center mb-2 fw-bold" id="deleteItemName"></p>
-        <p class="text-center text-muted">Esta acción no se puede deshacer. ¿Estás seguro que deseas eliminar este registro?</p>
+          Nueva Condición/Estado
+        </h5>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
-      <div class="modal-footer border-0 justify-content-center gap-2">
-        <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">
-          <i class="bi bi-x-circle"></i> Cancelar
-        </button>
-        <button type="button" class="btn btn-delete" id="confirmDeleteBtn">
-          <i class="bi bi-trash-fill"></i> Eliminar
-        </button>
+
+      <div class="modal-body p-4 pt-3">
+        <form id="formAgregarCondicion" method="post" action="public/cat_condiciones.php" class="row g-3">
+          <?=csrf_field()?>
+          <input type="hidden" name="accion_cond" value="add">
+
+          <div class="col-12">
+            <label class="custom-form-label"><i class="bi bi-check-circle-fill text-primary"></i> Nombre de la condición/estado
+              <span class="text-danger">*</span></label>
+            <input type="text" name="nombre" class="form-control custom-input"
+              placeholder="Ej. Nuevo, Usado, Dañado" required>
+          </div>
+
+          <div class="col-12">
+            <div class="alert alert-danger d-none mb-0" id="condAddError" role="alert">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span id="condAddErrorText"></span>
+            </div>
+          </div>
+
+          <div class="col-12 pt-3 border-top mt-3 d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light border rounded-pill px-4 fw-medium text-muted"
+              data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="submit"
+              class="btn rounded-pill px-4 fw-semibold shadow-sm d-flex align-items-center gap-2 text-white"
+              style="background-color: var(--primary); border: none; transition: transform 0.2s;"
+              onmouseover="this.style.transform='translateY(-2px)'"
+              onmouseout="this.style.transform='translateY(0)'">
+              <i class="bi bi-plus-lg"></i> Agregar
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
-</div> -->
+</div>
 
 <script>
-// Script para usar el modal de eliminación
 (function() {
-  const deleteModal = document.getElementById('deleteModal');
-  const deleteItemName = document.getElementById('deleteItemName');
-  const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-  let bsDeleteModal = null;
-  let currentForm = null;
+  const modalEl = document.getElementById('modalAgregarCondicion');
+  const form = document.getElementById('formAgregarCondicion');
+  const errBox = document.getElementById('condAddError');
+  const errText = document.getElementById('condAddErrorText');
 
-  function ensureDeleteModal() {
-    if (!bsDeleteModal && window.bootstrap && bootstrap.Modal) {
-      bsDeleteModal = new bootstrap.Modal(deleteModal);
-    }
-    return bsDeleteModal;
-  }
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    errBox.classList.add('d-none');
 
-  // Interceptar todos los formularios de eliminación
-  document.querySelectorAll('form[action*="eliminar"], form[action*="cat_clases"], form[action*="cat_condiciones"], form[action*="cat_ubicaciones"]').forEach(form => {
-    // Solo interceptar formularios con acción de eliminar
-    const deleteInput = form.querySelector('input[name="accion_clase"][value="del"], input[name="accion_condicion"][value="del"], input[name="accion_ubicacion"][value="del"], input[name="accion_item"][value="del"]');
-    
-    if (!deleteInput) return; // Si no es un formulario de eliminar, ignorar
-    
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      // Obtener el nombre del item de la fila más cercana
-      const row = form.closest('tr');
-      let itemName = 'este registro';
-      
-      // Buscar en diferentes posibles estructuras
-      const itemNameEl = row ? (
-        row.querySelector('.item-nombre') ||  // Para inventario
-        row.querySelector('td:first-child')   // Para catálogos (primera celda)
-      ) : null;
-      
-      if (itemNameEl) {
-        itemName = itemNameEl.textContent.trim();
+    const data = new FormData(form);
+
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: data,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      const json = await res.json();
+
+      if (!json.ok) {
+        errText.innerText = json.message || 'No se pudo agregar';
+        errBox.classList.remove('d-none');
+        return;
       }
-      
-      // Actualizar el contenido del modal
-      deleteItemName.textContent = itemName;
-      
-      // Guardar referencia al formulario
-      currentForm = form;
-      
-      // Mostrar el modal
-      const modal = ensureDeleteModal();
-      if (modal) modal.show();
-    });
+
+      window.location.reload();
+
+    } catch (err) {
+      errText.innerText = 'Error de conexión al guardar';
+      errBox.classList.remove('d-none');
+    }
   });
 
-  // Confirmar eliminación
-  if (confirmDeleteBtn) {
-    confirmDeleteBtn.addEventListener('click', function() {
-      if (currentForm) {
-        // Cerrar el modal
-        const modal = ensureDeleteModal();
-        if (modal) modal.hide();
-        
-        // Enviar el formulario después de cerrar el modal
-        setTimeout(() => {
-          currentForm.submit();
-        }, 300);
-      }
-    });
-  }
-
-  // Limpiar la referencia al cerrar el modal
-  deleteModal.addEventListener('hidden.bs.modal', function() {
-    currentForm = null;
+  modalEl.addEventListener('hidden.bs.modal', function() {
+    form.reset();
+    errBox.classList.add('d-none');
   });
 })();
 </script>

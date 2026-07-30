@@ -13,13 +13,6 @@ $is_admin = auth_is_admin();
 $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
-// if (!function_exists('ajax_response')) {
-//   function ajax_response(bool $ok, string $message = ''): void {
-//     echo json_encode(['ok'=>$ok,'message'=>$message]);
-//     exit;
-//   }
-// }
-
 // Bloquear POST si no es admin
 if (!$is_admin && $_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($is_ajax) ajax_response(false,'Sin permisos');
@@ -39,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (($_POST['accion_clase'] ?? '') === 'add') {
     $nombre = trim($_POST['nombre'] ?? '');
     if ($nombre === '') $errors[] = 'El nombre es obligatorio';
+
+    if ($errors && $is_ajax) ajax_response(false, implode(' ', $errors));
 
     if (!$errors) {
       try {
@@ -123,15 +118,28 @@ $rows = $pdo->query(
 #inventario-form {
   background: white;
   padding: 1.5rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   margin-bottom: 2rem;
 }
 
+.capsule-focus:focus-within {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.25) !important;
+  background-color: #ffffff !important;
+}
+
+.capsule-focus:focus-within i {
+  color: var(--primary) !important;
+}
+
 #inventario-form .input-group-text {
-  background: linear-gradient(135deg, #f4d03f 0%, #f39c12 100%);
+ background: #175027;
   border: none;
   color: white;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(243,156,18,0.3);
+   box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
+
 }
 
 #inventario-form .form-control,
@@ -174,14 +182,6 @@ $rows = $pdo->query(
   z-index: 1050 !important;
 }
 
-#deleteModal {
-  z-index: 1060 !important;
-}
-
-#deleteModal + .modal-backdrop {
-  z-index: 1059 !important;
-}
-
 #imgModal {
   z-index: 1055 !important;
 }
@@ -190,12 +190,12 @@ $rows = $pdo->query(
   z-index: 1054 !important;
 }
 
-/* Estilos del Modal */
+/* Estilos del Modal de eliminación */
 #deleteModal {
   z-index: 9999 !important;
 }
 
-#deleteModal .modal-backdrop {
+#deleteModal + .modal-backdrop {
   z-index: 9998 !important;
 }
 
@@ -439,30 +439,41 @@ $rows = $pdo->query(
     font-size: 2.5rem;
   }
 }
+
+/* ==========================================================================
+   MODO OSCURO (clases)
+   ========================================================================== */
+
+/* Input de edición en línea (fila "editar") */
+body.dark-mode .table-container .text-dark {
+    color: var(--text-main) !important;
+}
+
+body.dark-mode .table-container .text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* Modal "Nueva Clase" */
+body.dark-mode #modalAgregarClase .text-dark {
+    color: var(--text-main) !important;
+}
+
+body.dark-mode #modalAgregarClase .btn-light {
+    background-color: var(--bg-body) !important;
+    border-color: var(--border-color) !important;
+}
+
 </style>
 
-<!-- Formulario de agregar -->
-<form id="inventario-form" class="row g-3 mb-4" method="post" action="public/cat_clases.php">
-  <?=csrf_field()?>
-  <input type="hidden" name="accion_clase" value="add">
-  
-  <div class="col-md-9">
-    <div class="input-group">
-      <label class="input-group-text text-white" style="background-color: #F59E0B;">
-        <i class="bi bi-tag-fill"></i>
-      </label>
-      <input name="nombre" class="form-control" placeholder="Clase" required>
-    </div>
-  </div>
-  
-  <div class="col-md-3">
-    <button class="btn btn-success w-100">
-      <i class="bi bi-plus-lg"></i> Agregar
-    </button>
-  </div>
-</form>
+<div class="d-flex justify-content-end mb-3">
+  <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm d-flex align-items-center gap-2"
+    style="background-color: var(--primary); border: none;"
+    data-bs-toggle="modal" data-bs-target="#modalAgregarClase">
+    <i class="bi bi-plus-lg"></i> Agregar Clase
+  </button>
+</div>
 
-<?php if ($errors): ?>
+<?php if ($errors && $edit_id): ?>
   <div class="alert alert-danger">
     <ul class="mb-0"><?php foreach($errors as $e): ?><li><?=h($e)?></li><?php endforeach; ?></ul>
   </div>
@@ -484,25 +495,23 @@ $rows = $pdo->query(
           <?php if ($edit_id === (int)$r['id']): ?>
             <tr>
               <td>
-                <form method="post" class="row g-2" action="public/cat_clases.php">
+                <form method="post" class="d-flex align-items-center gap-2 flex-wrap" action="public/cat_clases.php">
                   <?=csrf_field()?>
                   <input type="hidden" name="accion_clase" value="upd">
                   <input type="hidden" name="id" value="<?=$r['id']?>">
-                  <div class="col-12">
-                    <div class="input-group">
-                      <label class="input-group-text text-white" style="background-color: #F59E0B;">
-                        <i class="bi bi-tag-fill"></i>
-                      </label>
-                      <input name="nombre" class="form-control" required value="<?=h($r['nombre'])?>">
-                    </div>
+                  <div class="d-flex align-items-center bg-light border rounded-pill px-3 py-1 capsule-focus flex-grow-1"
+                    style="border-color: var(--border-color) !important; transition: all 0.2s; min-width: 200px;">
+                    <i class="bi bi-tag-fill text-muted"></i>
+                    <input name="nombre" class="form-control border-0 bg-transparent shadow-none ms-2 text-dark"
+                      required value="<?=h($r['nombre'])?>">
                   </div>
               </td>
               <td class="text-center">
                 <div class="d-flex gap-2 justify-content-center">
-                  <button class="btn btn-sm btn-primary">
+                  <button class="btn btn-primary rounded-pill btn-sm px-3" style="background-color: var(--primary); border:none;">
                     <i class="bi bi-check-lg"></i>
                   </button>
-                  <a class="btn btn-sm btn-secondary" href="index.php?tab=cclase#cclase">
+                  <a class="btn btn-light border rounded-pill btn-sm px-3 text-muted" href="index.php?tab=cclase#cclase">
                     <i class="bi bi-x-lg"></i>
                   </a>
                 </div>
@@ -537,267 +546,98 @@ $rows = $pdo->query(
   </div>
 </div>
 
-<!-- Modal de Confirmación para Eliminar
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+<!-- MODAL AGREGAR CLASE -->
+<div class="modal fade" id="modalAgregarClase" tabindex="-1" aria-labelledby="modalAgregarClaseLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteModalLabel">
-          <i class="bi bi-exclamation-triangle-fill"></i>
-          Confirmar Eliminación
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+
+      <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-3" id="modalAgregarClaseLabel">
+          <div class="text-primary rounded-circle d-flex align-items-center justify-content-center"
+            style="width: 45px; height: 45px; background-color: var(--primary-light);">
+            <i class="bi bi-tag-fill fs-5"></i>
+          </div>
+          Nueva Clase
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
-      
-      <div class="modal-body">
-        <div class="delete-icon-wrapper">
-          <i class="bi bi-trash-fill"></i>
-        </div>
-        <div id="deleteItemName">Nombre del registro</div>
-        <p class="delete-warning-text">
-          <span class="delete-warning-highlight">⚠️ Esta acción no se puede deshacer.</span><br>
-          ¿Estás seguro que deseas eliminar este registro permanentemente?
-        </p>
-      </div>
-      
-      <div class="modal-footer">
-        <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">
-          <i class="bi bi-x-circle"></i>
-          <span>Cancelar</span>
-        </button>
-        <button type="button" class="btn btn-delete" id="confirmDeleteBtn">
-          <i class="bi bi-trash-fill"></i>
-          <span>Eliminar</span>
-        </button>
+
+      <div class="modal-body p-4 pt-3">
+        <form id="formAgregarClase" method="post" action="public/cat_clases.php" class="row g-3">
+          <?=csrf_field()?>
+          <input type="hidden" name="accion_clase" value="add">
+
+          <div class="col-12">
+            <label class="custom-form-label"><i class="bi bi-tag-fill text-primary"></i> Nombre de la clase
+              <span class="text-danger">*</span></label>
+            <input type="text" name="nombre" class="form-control custom-input"
+              placeholder="Ej. Herramientas eléctricas" required>
+          </div>
+
+          <div class="col-12">
+            <div class="alert alert-danger d-none mb-0" id="claseAddError" role="alert">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span id="claseAddErrorText"></span>
+            </div>
+          </div>
+
+          <div class="col-12 pt-3 border-top mt-3 d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light border rounded-pill px-4 fw-medium text-muted"
+              data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="submit"
+              class="btn rounded-pill px-4 fw-semibold shadow-sm d-flex align-items-center gap-2 text-white"
+              style="background-color: var(--primary); border: none; transition: transform 0.2s;"
+              onmouseover="this.style.transform='translateY(-2px)'"
+              onmouseout="this.style.transform='translateY(0)'">
+              <i class="bi bi-plus-lg"></i> Agregar
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
-</div> -->
-
-<!--Modal eliminación -->
-<!-- <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title">
-          <i class="bi bi-exclamation-triangle-fill text-warning"></i>
-          Confirmar Eliminación
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body text-center">
-
-        <div class="delete-icon-wrapper mb-3">
-          <i class="bi bi-trash-fill"></i>
-        </div>
-
-        <div id="deleteItemName" class="fw-bold fs-5 mb-2">Nombre del registro</div>
-
-        <p class="delete-warning-text">
-          <span class="delete-warning-highlight text-danger fw-semibold">⚠️ Esta acción no se puede deshacer.</span><br>
-          ¿Estás seguro que deseas eliminar este registro permanentemente?
-        </p>
-
-      </div>
-
-      <div class="modal-footer justify-content-between">
-
-        <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">
-          <i class="bi bi-x-circle"></i>
-          <span>Cancelar</span>
-        </button>
-
-        <button type="button" class="btn btn-delete" id="confirmDeleteBtn">
-          <i class="bi bi-trash-fill"></i>
-          <span>Eliminar</span>
-        </button>
-
-      </div>
-
-    </div>
-  </div>
-</div> -->
+</div>
 
 <script>
-// ========================================
-// SCRIPT UNIVERSAL PARA MODAL DE ELIMINACIÓN
-// Sin conflictos con otros modales
-// ========================================
+(function() {
+  const modalEl = document.getElementById('modalAgregarClase');
+  const form = document.getElementById('formAgregarClase');
+  const errBox = document.getElementById('claseAddError');
+  const errText = document.getElementById('claseAddErrorText');
 
-// (function() {
-//   'use strict';
-  
-//   console.log('🗑️ Iniciando sistema de eliminación...');
-  
-//   // Esperar a que el DOM y Bootstrap estén listos
-//   if (document.readyState === 'loading') {
-//     document.addEventListener('DOMContentLoaded', init);
-//   } else {
-//     init();
-//   }
-  
-//   function init() {
-//     console.log('✅ DOM listo, configurando modal de eliminación');
-    
-//     const deleteModal = document.getElementById('deleteModal');
-//     const deleteItemName = document.getElementById('deleteItemName');
-//     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-//     const cancelBtn = deleteModal ? deleteModal.querySelector('.btn-cancel') : null;
-    
-//     if (!deleteModal) {
-//       console.error('❌ Modal #deleteModal no encontrado');
-//       return;
-//     }
-    
-//     let currentForm = null;
-//     let bsDeleteModal = null;
-    
-//     // Función para obtener instancia del modal
-//     function getModalInstance() {
-//       if (!bsDeleteModal && window.bootstrap && bootstrap.Modal) {
-//         bsDeleteModal = new bootstrap.Modal(deleteModal, {
-//           backdrop: true,
-//           keyboard: true,
-//           focus: true
-//         });
-//       }
-//       return bsDeleteModal;
-//     }
-    
-//     // Limpiar backdrops huérfanos
-//     function cleanBackdrops() {
-//       const backdrops = document.querySelectorAll('.modal-backdrop');
-//       backdrops.forEach(backdrop => backdrop.remove());
-//       document.body.classList.remove('modal-open');
-//       document.body.style.overflow = '';
-//       document.body.style.paddingRight = '';
-//     }
-    
-//     // Interceptar clicks en botones de eliminar
-//     document.addEventListener('click', function(e) {
-//       const deleteBtn = e.target.closest('.btn-action-delete');
-      
-//       if (!deleteBtn) return;
-      
-//       console.log('🔴 Click en botón eliminar');
-//       e.preventDefault();
-//       e.stopPropagation();
-      
-//       // Limpiar cualquier backdrop previo
-//       cleanBackdrops();
-      
-//       // Obtener formulario
-//       currentForm = deleteBtn.closest('form');
-      
-//       if (!currentForm) {
-//         console.error('❌ No se encontró el formulario');
-//         return;
-//       }
-      
-//       console.log('✅ Formulario encontrado');
-      
-//       // Obtener nombre del item
-//       const row = deleteBtn.closest('tr');
-//       let itemName = 'este registro';
-      
-//       if (row) {
-//         // Intentar obtener de diferentes formas
-//         const nameEl = row.querySelector('.item-nombre') || 
-//                       row.querySelector('td:first-child');
-        
-//         if (nameEl) {
-//           itemName = nameEl.textContent.trim();
-//           console.log('📝 Item:', itemName);
-//         }
-//       }
-      
-//       // Actualizar modal
-//       if (deleteItemName) {
-//         deleteItemName.textContent = itemName;
-//       }
-      
-//       // Mostrar modal
-//       const modal = getModalInstance();
-//       if (modal) {
-//         try {
-//           modal.show();
-//           console.log('✅ Modal mostrado correctamente');
-//         } catch (error) {
-//           console.error('❌ Error al mostrar modal:', error);
-//         }
-//       }
-//     }, true); // useCapture = true para capturar antes
-    
-//     // Confirmar eliminación
-//     if (confirmDeleteBtn) {
-//       confirmDeleteBtn.addEventListener('click', function(e) {
-//         e.preventDefault();
-//         console.log('✅ Eliminación confirmada');
-        
-//         if (!currentForm) {
-//           console.error('❌ No hay formulario para enviar');
-//           return;
-//         }
-        
-//         // Cerrar modal
-//         const modal = getModalInstance();
-//         if (modal) {
-//           try {
-//             modal.hide();
-//           } catch (error) {
-//             console.error('Error al cerrar modal:', error);
-//           }
-//         }
-        
-//         // Esperar a que se cierre el modal
-//         setTimeout(function() {
-//           cleanBackdrops();
-//           console.log('📤 Enviando formulario...');
-//           currentForm.submit();
-//         }, 300);
-//       });
-//     }
-    
-//     // Cancelar eliminación
-//     if (cancelBtn) {
-//       cancelBtn.addEventListener('click', function() {
-//         console.log('❌ Eliminación cancelada');
-//         currentForm = null;
-        
-//         const modal = getModalInstance();
-//         if (modal) {
-//           try {
-//             modal.hide();
-//           } catch (error) {
-//             console.error('Error al cerrar modal:', error);
-//           }
-//         }
-        
-//         setTimeout(cleanBackdrops, 300);
-//       });
-//     }
-    
-//     // Limpiar al cerrar modal
-//     if (deleteModal) {
-//       deleteModal.addEventListener('hidden.bs.modal', function() {
-//         console.log('🔒 Modal cerrado');
-//         currentForm = null;
-//         cleanBackdrops();
-//       });
-      
-//       // Asegurar que se muestre correctamente
-//       deleteModal.addEventListener('show.bs.modal', function() {
-//         console.log('👁️ Mostrando modal...');
-//       });
-      
-//       deleteModal.addEventListener('shown.bs.modal', function() {
-//         console.log('✅ Modal visible');
-//       });
-//     }
-    
-//     console.log('✅ Sistema de eliminación configurado');
-//   }
-// })();
-// </script>
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    errBox.classList.add('d-none');
+
+    const data = new FormData(form);
+
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: data,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      const json = await res.json();
+
+      if (!json.ok) {
+        errText.innerText = json.message || 'No se pudo agregar';
+        errBox.classList.remove('d-none');
+        return;
+      }
+
+      window.location.reload();
+
+    } catch (err) {
+      errText.innerText = 'Error de conexión al guardar';
+      errBox.classList.remove('d-none');
+    }
+  });
+
+  modalEl.addEventListener('hidden.bs.modal', function() {
+    form.reset();
+    errBox.classList.add('d-none');
+  });
+})();
+</script>
