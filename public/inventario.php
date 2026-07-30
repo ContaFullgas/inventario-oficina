@@ -1776,6 +1776,38 @@ body.dark-mode .tab-pane .text-muted {
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="errorToggleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+
+            <div class="modal-body text-center p-4">
+
+                <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle"
+                     style="width:72px;height:72px;background:rgba(231,76,60,.12);">
+                    <i class="bi bi-exclamation-triangle-fill fs-1 text-danger"></i>
+                </div>
+
+                <h5 id="errorToggleTitle" class="fw-bold mb-2">
+                    No se puede desactivar
+                </h5>
+
+                <p id="errorToggleText" class="text-muted mb-4">
+                    Este artículo todavía tiene existencias.
+                </p>
+
+                <button type="button"
+                        class="btn btn-danger px-4"
+                        data-bs-dismiss="modal">
+                    Entendido
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
 <script>
 // Movimientos de inventario (Entrada/Salida)
 document.addEventListener('click', function(e) {
@@ -1915,7 +1947,16 @@ document.getElementById('confirmToggleBtn').addEventListener('click', async func
     bootstrap.Modal.getInstance(document.getElementById('confirmToggleModal')).hide();
 
     if (!json.ok) {
-        alert(json.message || 'Error');
+
+        document.getElementById('errorToggleTitle').innerText = 'No se pudo completar la acción';
+
+        document.getElementById('errorToggleText').innerText =
+            json.message || 'Ocurrió un error.';
+
+        bootstrap.Modal
+            .getOrCreateInstance(document.getElementById('errorToggleModal'))
+            .show();
+
         pendingToggle = null;
         return;
     }
