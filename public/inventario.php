@@ -1961,4 +1961,263 @@ document.addEventListener('click', function(e) {
     sessionStorage.setItem('inv_scroll', window.scrollY);
 });
 </script>
+
+<script>
+(function(){
+  
+  const root = document.getElementById('inv');
+  if (!root) return;
+
+  const form = root.querySelector('#inventario-form');
+  const q    = form?.querySelector('input[name="q"]');
+  const clase = form?.querySelector('select[name="clase_id"]');
+  const perPageInput  = form.querySelector('input[name="per_page_inv"]');
+  const perPageSelect = root.querySelector('#perPageSelect');
+
+  let t;
+
+  // q.addEventListener('input', function(){
+  //   clearTimeout(t);
+  //   t = setTimeout(function(){ form.submit(); }, 400);
+  // });
+
+  clase.addEventListener('change', function(){ form.submit(); });
+
+  // Cambio de items por página
+  if (perPageSelect) {
+    perPageSelect.addEventListener('change', function(){
+      if (perPageInput) {
+        perPageInput.value = this.value;
+      }
+      form.submit();
+    });
+  }
+
+  const modalEl   = document.getElementById('imgModal');
+  const zoomBox   = document.getElementById('imgZoomContainer');
+  const closeBtn  = document.querySelector('#imgModal .img-modal-close');
+  const canvas    = document.getElementById('imgCanvas');
+  const ctx       = canvas.getContext('2d');
+  const loaderImg = document.getElementById('imgPreloader');
+
+  let bsModal = null;
+  let modalShown = false;
+  let imgReady   = false;
+
+  function ensureModal(){
+    if (!bsModal) {
+      if (!window.bootstrap || !bootstrap.Modal) return null;
+      bsModal = new bootstrap.Modal(modalEl);
+    }
+    return bsModal;
+  }
+
+  let scale = 1, minScale = 0.9, maxScale = 4;
+  let tx = 0, ty = 0;
+  let imgW = 0, imgH = 0;
+  let baseW = 0, baseH = 0;
+  let dragging = false, lx = 0, ly = 0;
+
+  function resizeCanvas(){
+    const dpr = window.devicePixelRatio || 1;
+    const cw = zoomBox.clientWidth;
+    const ch = zoomBox.clientHeight;
+    canvas.width  = Math.round(cw * dpr);
+    canvas.height = Math.round(ch * dpr);
+    canvas.style.width  = cw + 'px';
+    canvas.style.height = ch + 'px';
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(dpr, dpr);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+  }
+
+  function computeBaseSize(){
+    const cw = zoomBox.clientWidth;
+    const ch = zoomBox.clientHeight;
+    const s = Math.min(cw / imgW, ch / imgH);
+    baseW = imgW * s;
+    baseH = imgH * s;
+  }
+
+  function clamp(){
+    const cw = zoomBox.clientWidth;
+    const ch = zoomBox.clientHeight;
+    const dispW = baseW * scale;
+    const dispH = baseH * scale;
+    const maxX = Math.max(0, (dispW - cw) / 2);
+    const maxY = Math.max(0, (dispH - ch) / 2);
+    if (tx >  maxX) tx =  maxX;
+    if (tx < -maxX) tx = -maxX;
+    if (ty >  maxY) ty =  maxY;
+    if (ty < -maxY) ty = -maxY;
+  }
+
+  function draw(){
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    const cw = zoomBox.clientWidth;
+    const ch = zoomBox.clientHeight;
+    const cx = cw/2;
+    const cy = ch/2;
+
+    const rtx = Math.round(tx);
+    const rty = Math.round(ty);
+    const rscale = Math.round(scale * 100) / 100;
+
+    const w = baseW * rscale;
+    const h = baseH * rscale;
+    const x = Math.round(cx - w/2 + rtx);
+    const y = Math.round(cy - h/2 + rty);
+
+    ctx.drawImage(loaderImg, x, y, Math.round(w), Math.round(h));
+
+    if (rscale > 1) zoomBox.classList.add('can-pan'); else zoomBox.classList.remove('can-pan');
+  }
+
+  let needsDraw = false;
+
+  function safeDraw() {
+    if (needsDraw) return;
+    needsDraw = true;
+
+    requestAnimationFrame(() => {
+      draw();
+      needsDraw = false;
+    });
+  }
+
+
+
+  function resetView(toScale=1){
+    scale = toScale; tx = 0; ty = 0;
+    resizeCanvas();
+    computeBaseSize();
+    safeDraw();
+  }
+
+  function openImgModal(imgFile){
+    if (!imgFile) return;
+
+    imgReady = false;
+    loaderImg.onload = function(){
+      imgW = loaderImg.naturalWidth;
+      imgH = loaderImg.naturalHeight;
+      imgReady = true;
+      if (modalShown) resetView(1);
+    };
+    loaderImg.src = 'uploads/' + imgFile;
+
+    const m = ensureModal();
+    if (m) m.show();
+  }
+
+  modalEl.addEventListener('shown.bs.modal', () => {
+    modalShown = true;
+    if (imgReady) resetView(1);
+  });
+
+  modalEl.addEventListener('hidden.bs.modal', () => {
+    modalShown = false;
+    scale = 1; tx = 0; ty = 0; imgW = 0; imgH = 0;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const m = ensureModal(); if (m) m.hide();
+    });
+  }
+
+  window.addEventListener('resize', () => { 
+    if (modalShown && imgReady) resetView(scale);
+  });
+
+  zoomBox.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (!imgW || !imgH || !modalShown) return;
+
+    const rect = zoomBox.getBoundingClientRect();
+    const pcx = e.clientX - rect.left - rect.width/2 - tx;
+    const pcy = e.clientY - rect.top  - rect.height/2 - ty;
+
+    const step = 0.25;
+    let newScale = scale + (e.deltaY > 0 ? -step : step);
+    newScale = Math.min(maxScale, Math.max(minScale, newScale));
+    newScale = Math.round(newScale * 100) / 100;
+    if (newScale === scale) return;
+
+    const k = newScale / scale;
+    tx = tx - pcx * (k - 1);
+    ty = ty - pcy * (k - 1);
+    scale = newScale;
+    clamp();
+    safeDraw();
+  }, { passive:false });
+
+  zoomBox.addEventListener('mousedown', (e) => {
+    if (!modalShown || !imgReady) return;
+    if (e.button !== 0) return;
+    if (scale <= 1) return;
+    e.preventDefault();
+    dragging = true;
+    zoomBox.classList.add('grabbing');
+    lx = e.clientX; ly = e.clientY;
+  });
+
+  zoomBox.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    if ((e.buttons & 1) !== 1) {
+      dragging = false; zoomBox.classList.remove('grabbing'); return;
+    }
+    const dx = e.clientX - lx;
+    const dy = e.clientY - ly;
+    lx = e.clientX; ly = e.clientY;
+    tx += dx; ty += dy;
+    clamp();
+    safeDraw();
+  });
+
+  ['mouseup','mouseleave'].forEach(ev => {
+    zoomBox.addEventListener(ev, () => { dragging = false; zoomBox.classList.remove('grabbing'); });
+  });
+
+  zoomBox.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    if (!imgW || !imgH || !modalShown) return;
+
+    const rect = zoomBox.getBoundingClientRect();
+    const pcx = e.clientX - rect.left - rect.width/2 - tx;
+    const pcy = e.clientY - rect.top  - rect.height/2 - ty;
+
+    const target = (scale <= 1.1) ? 2 : 1;
+    const k = target / scale;
+    tx = tx - pcx * (k - 1);
+    ty = ty - pcy * (k - 1);
+    scale = target;
+    clamp();
+    safeDraw();
+  });
+
+  document.querySelectorAll('.img-thumb[data-img]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      openImgModal(el.getAttribute('data-img'));
+    });
+  });
+
+  document.getElementById('tabla-inventario')?.addEventListener('click', function (e) {
+    const tr = e.target.closest('tr[data-img]');
+    if (!tr) return;
+    if (e.target.closest('a,button,form,input,select,label')) return;
+
+    openImgModal(tr.getAttribute('data-img'));
+  });
+
+})();
+
+</script>
+
 <?php include __DIR__.'/editar.php'; ?>
